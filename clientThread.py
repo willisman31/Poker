@@ -10,11 +10,11 @@ class ClientThread(object):
 
     def __init__(self,host,port):
 
-        sock = socket()
+        self.sock = socket()
         #Connecting to socket
-        sock.connect((host, port)) #Connect takes tuple of host and port
+        self.sock.connect((host, port)) #Connect takes tuple of host and port
 
-        start_new_thread(self.client_thread,(sock,))
+        start_new_thread(self.client_thread,(self.sock,))
 
     def client_thread(self,sock):
         #Infinite loop to keep client running.
