@@ -24,7 +24,7 @@ class PokerServer:
         screen.blit(textPort, textPortRect)
 
         Button1 = mygui.Button()
-        Button1.create_button(screen, BACK_BUTTON, WIDTH/3, HEIGHT/3.55, WIDTH/3.2,    HEIGHT/6.85,    0,  "Start Game", TEXT_BUTTON)
+        Button1.create_button(screen, BACK_BUTTON, WIDTH/3, 2*HEIGHT/3, WIDTH/3.2,    HEIGHT/6.85,    0,  "Start", TEXT_BUTTON)
 
         while 1 :
             for event in pygame.event.get():
