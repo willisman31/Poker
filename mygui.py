@@ -64,6 +64,13 @@ class Button:
             else: return False
         else: return False
 
+    def delete_button(self, screen, color):
+        #This function just removes the button from the screen. It is still present logically.
+        self.rect.topleft = (self.rect.topleft[0]-10, self.rect.topleft[1]-10)
+        self.rect.size = (self.rect.width + 20, self.rect.height + 20)
+        pygame.draw.rect(screen, color, self.rect)
+
+
 
 #TextBox Code
 #

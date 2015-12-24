@@ -54,4 +54,13 @@ class PokerClient:
             serIP = input_ip.get_text()
             serPort = input_port.get_text()
             cliObj = clientThread.ClientThread(str(serIP),int(serPort))
-            time.sleep(60)
+
+            Button1.delete_button(screen, BACK_SCREEN)
+            del Button1
+
+            textWait, textWaitRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "Waiting for server to begin...", WHITE, None, WIDTH/2-BOXPORTWIDTH/2-WIDTH/13,HEIGHT/2+HEIGHT/9.6)
+            screen.blit(textWait, textWaitRect)
+
+            cliObj.sock.recv(1024)
+
+            #clientGame.ClientGame()
