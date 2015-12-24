@@ -1,6 +1,5 @@
 #!usr/bin/python
 from socket import *
-#Importing all from thread
 from thread import *
 import time
 #host = 'localhost' # '127.0.0.1' can also be used
@@ -12,8 +11,7 @@ class ClientThread(object):
 
         sock = socket()
         #Connecting to socket
-        sock.connect(("127.0.0.1", 52001)) #Connect takes tuple of host and port
-
+        sock.connect((host,port)) #Connect takes tuple of host and port
         start_new_thread(self.client_thread,(sock,))
 
     def client_thread(self,sock):

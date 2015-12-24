@@ -20,13 +20,11 @@ class PokerServer:
         textIp, textIpRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "Host IP : "+serIP, WHITE, None, WIDTH/2, HEIGHT/4)
         screen.blit(textIp, textIpRect)
 
-        textPort, textPortRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "Port : " + str(serPort), WHITE, None, WIDTH/2, HEIGHT/2)
+        textPort, textPortRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "Port : " + str(serPort), WHITE, None, WIDTH/2, HEIGHT/4 + HEIGHT/10)
         screen.blit(textPort, textPortRect)
 
-
-        #textSurfaceObj, textRectObj = mygui.print_text('freesansbold.ttf', HEIGHT/15, "Server", WHITE, None, WIDTH/2, HEIGHT/10)
-        #screen.blit(textSurfaceObj, textRectObj)
-
+        Button1 = mygui.Button()
+        Button1.create_button(screen, BACK_BUTTON, WIDTH/3, HEIGHT/3.55, WIDTH/3.2,    HEIGHT/6.85,    0,  "Start Game", TEXT_BUTTON)
 
         while 1 :
             for event in pygame.event.get():
@@ -34,7 +32,7 @@ class PokerServer:
                     pygame.quit()
                     sys.exit()
             serClients = self.serObj.get_num_of_clients()
-            textClients, textClientsRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "# of Clients : "+ str(serClients), WHITE, None, WIDTH/2, 3*HEIGHT/4)
+            textClients, textClientsRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "# of Clients : "+ str(serClients), WHITE, None, WIDTH/2, HEIGHT/4 + HEIGHT/5)
             pygame.draw.rect(screen, BACK_SCREEN, textClientsRect)
             screen.blit(textClients, textClientsRect)
 
