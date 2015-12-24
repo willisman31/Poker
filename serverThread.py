@@ -11,7 +11,7 @@ num_of_clients = 0
 
 # Defining server address and port
 host = '127.0.0.1'  #'localhost' or '127.0.0.1' or '' are all same
-port = 52001 #Use port > 1024, below it all are reserved
+port = 1234 #Use port > 1024, below it all are reserved
 
 class ServerThread(object):
 
@@ -19,6 +19,10 @@ class ServerThread(object):
 
         #Creating socket object
         sock = socket()
+
+        global host
+        host = self.get_ip()
+
         #Binding socket to a address. bind() takes tuple of host and port.
         sock.bind((host, port))
 
