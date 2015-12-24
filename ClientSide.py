@@ -1,4 +1,4 @@
-import sys, pygame, mygui
+import sys, pygame, mygui, clientThread, time
 from pygame.locals import *
 from constants import *
 
@@ -50,5 +50,8 @@ class PokerClient:
             input_port.draw(screen)
             pygame.display.update()
 
-        #if connect:
-        #Write Code for Client side
+        if connect:
+            serIP = input_ip.get_text()
+            serPort = input_port.get_text()
+            cliObj = clientThread.ClientThread(str(serIP),int(serPort))
+            time.sleep(60)

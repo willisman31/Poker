@@ -82,6 +82,9 @@ class TextBox(object):
         self.blink_timer = 0.0
         self.process_kwargs(kwargs)
 
+    def get_text(self):
+        return self.final
+
     def process_kwargs(self,kwargs):
         defaults = {"id" : None,
                     "command" : None,
