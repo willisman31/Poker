@@ -1,6 +1,4 @@
 
-initialMoney = 1000
-
 class Player():
     def __init__(self,id,name="John"):
         self.id = id
@@ -10,7 +8,7 @@ class Player():
     def reset(self):
         self.fold = False
         self.turn = -1
-        self.money = initialMoney
+        self.money = INITMONEY
         self.pot = 0
 
     def bet(self,amount):
