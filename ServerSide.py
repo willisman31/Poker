@@ -1,4 +1,4 @@
-import sys, pygame, mygui, serverThread
+import sys, pygame, mygui, serverThread, serverGame
 from pygame.locals import *
 from constants import *
 
@@ -55,4 +55,4 @@ class PokerServer:
 
             pygame.display.update()
 
-            #serverGame.ServerGame()
+        serverGame.main(screen, self.serObj.clients)

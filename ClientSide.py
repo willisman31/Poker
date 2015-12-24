@@ -1,4 +1,4 @@
-import sys, pygame, mygui, clientThread, time
+import sys, pygame, mygui, clientThread, time, clientGame
 from pygame.locals import *
 from constants import *
 
@@ -62,6 +62,6 @@ class PokerClient:
             screen.blit(textWait, textWaitRect)
             pygame.display.update()
 
-            cliObj.sock.recv(1024)
-
-            #clientGame.ClientGame()
+            begin = cliObj.sock.recv(1024)
+            if begin == "begin":
+                clientGame.main(screen, cliObj.sock)

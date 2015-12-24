@@ -1,5 +1,9 @@
+import sys, pygame, mygui, serverThread, serverGame, time
+from pygame.locals import *
+from constants import *
 from deck import *
 from player import *
+
 
 deck = Deck()
 cards = {0:[]}
@@ -54,8 +58,22 @@ def start_game():
 
     result()
 
-def main():#clients):
-    clients = [1,2,3]
+def unpause_clients(clientSockets):
+    for obj in clientSockets:
+        obj.send("begin")
+
+
+def main(screen, clientSockets):
+    #clients = [1,2,3]
+
+    unpause_clients(clientSockets)
+    print "Inside serverGame file : Method main()"
+    screen.fill(BACK_SCREEN)
+    pygame.display.update()
+    time.sleep(5)
+    pygame.quit()
+    sys.exit()
+
     init(clients)
     start_game()
 
