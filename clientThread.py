@@ -1,6 +1,5 @@
 #!usr/bin/python
 from socket import *
-#Importing all from thread
 from thread import *
 import time
 #host = 'localhost' # '127.0.0.1' can also be used
