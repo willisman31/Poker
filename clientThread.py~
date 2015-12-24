@@ -12,7 +12,7 @@ class ClientThread(object):
 
         sock = socket()
         #Connecting to socket
-        sock.connect((host, port)) #Connect takes tuple of host and port
+        sock.connect(("127.0.0.1", 52001)) #Connect takes tuple of host and port
 
         start_new_thread(self.client_thread,(sock,))
 
@@ -27,8 +27,8 @@ class ClientThread(object):
         sock.close()
 
 def main():
-    host = '172.24.136.242' # '127.0.0.1' can also be used
-    port = 1234
+    host = 'localhost' # '127.0.0.1' can also be used
+    port = 52001
 
     obj = ClientThread(host,port)
     time.sleep(60)
