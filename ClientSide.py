@@ -58,8 +58,9 @@ class PokerClient:
             Button1.delete_button(screen, BACK_SCREEN)
             del Button1
 
-            textWait, textWaitRect = mygui.print_text('freesansbold.ttf', HEIGHT/30, "Waiting for server to begin...", WHITE, None, WIDTH/2-BOXPORTWIDTH/2-WIDTH/13,HEIGHT/2+HEIGHT/9.6)
+            textWait, textWaitRect = mygui.print_text('freesansbold.ttf', HEIGHT/25, "Waiting for server to begin...", WHITE, None, WIDTH/2,HEIGHT/2+HEIGHT/9.6)
             screen.blit(textWait, textWaitRect)
+            pygame.display.update()
 
             cliObj.sock.recv(1024)
 
