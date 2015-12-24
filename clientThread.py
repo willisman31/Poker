@@ -2,8 +2,6 @@
 from socket import *
 from thread import *
 import time
-#host = 'localhost' # '127.0.0.1' can also be used
-#port = 52001
 
 class ClientThread(object):
 
