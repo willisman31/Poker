@@ -7,7 +7,7 @@ class Player():
 
     def reset(self):
         self.fold = False
-        self.turn = -1
+        #self.turn = -1
         self.money = INITMONEY
         self.pot = 0
 

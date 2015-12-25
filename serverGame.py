@@ -18,13 +18,13 @@ lastRaisedPlayer = -1
 serverTurn = 0
 
 def init(clients):
-    numberOfPlayers = len(clients)
+    numberOfPlayers = len(clients) + 1
     #Initializing cards and players
     for i in range(0, numberOfPlayers):
         cards[i] = (deck.pop(),deck.pop())
         players[i] = Player(i)
 
-    serverTurn = 0
+    serverTurn = numberOfPlayers - 1
     players.get(start).bet(smallBlind)
     players.get((start+1)%numberOfPlayers).bet(bigBlind)
     turn = (start + 2)%numberOfPlayers
@@ -37,15 +37,17 @@ def init(clients):
 #one match = several games, one game = 4 rounds
 def one_round():
     while True:
+        broadcast()
         wait_for_client()
         update_game()
-
         turn = (turn+1)%numberOfPlayers
+
         if turn == lastRaisedPlayer:
             break
+    broadcast()
 
 def start_game():
-    init_broadcast()
+    init_broadcast() #players, client's cards, tablecards, turn
 
     one_round()
     tableCards.append(deck.pop())
@@ -57,6 +59,7 @@ def start_game():
     tableCards.append(deck.pop())
 
     result()
+    broadcast_result()
 
 def unpause_clients(clientSockets):
     for obj in clientSockets:
@@ -71,7 +74,7 @@ def main(screen, clientSockets):
     screen.fill(BACK_SCREEN)
     pygame.display.update()
     time.sleep(5)
-    pygame.quit()
+    pygame.quit0()
     sys.exit()
 
     init(clients)
