@@ -1,7 +1,6 @@
 
 import pygame, string
 from pygame.locals import *
-from constants import *
 
 pygame.init()
 

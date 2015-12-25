@@ -2,8 +2,6 @@ import sys, pygame, mygui, clientThread, time, clientGame
 from pygame.locals import *
 from constants import *
 
-pygame.init()
-
 class PokerClient:
 
     def __init__(self, screen):

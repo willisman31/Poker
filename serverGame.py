@@ -74,7 +74,7 @@ def main(screen, clientSockets):
     screen.fill(BACK_SCREEN)
     pygame.display.update()
     time.sleep(5)
-    pygame.quit0()
+    pygame.quit()
     sys.exit()
 
     init(clients)
