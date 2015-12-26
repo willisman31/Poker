@@ -38,13 +38,19 @@ def init(clients):
 def one_round():
     while True:
         broadcast()
-        wait_for_client()
+        if turn == serverTurn:
+            server_move()
+        else:
+            wait_for_client_move()
+
         update_game()
         turn = (turn+1)%numberOfPlayers
-
         if turn == lastRaisedPlayer:
             break
     broadcast()
+
+def init_broadcast():
+
 
 def start_game():
     init_broadcast() #players, client's cards, tablecards, turn
