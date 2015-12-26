@@ -11,7 +11,8 @@ class PokerClient:
         BOXPORTWIDTH = WIDTH/3.2
         BOXPORTHEIGHT = HEIGHT/16
 
-        screen.fill(BACK_SCREEN)
+        #screen.fill(BACK_SCREEN)
+        screen.blit(BG0, (0,0)) #Set background image
 
         textClient, textClientRect = mygui.print_text('freesansbold.ttf', HEIGHT/15, "Client", WHITE, None, WIDTH/2, HEIGHT/10)
         screen.blit(textClient, textClientRect)
@@ -53,7 +54,8 @@ class PokerClient:
             serPort = input_port.get_text()
             cliObj = clientThread.ClientThread(str(serIP),int(serPort))
 
-            Button1.delete_button(screen, BACK_SCREEN)
+            #Button1.delete_button(screen, BACK_SCREEN)
+            screen.blit(BG0, (WIDTH/2-WIDTH/6-10, HEIGHT/2-10), (WIDTH/2-WIDTH/6-10, HEIGHT/2-10,Button1.rect.width+20,Button1.rect.height+20)) #Remove Button surface
             del Button1
 
             textWait, textWaitRect = mygui.print_text('freesansbold.ttf', HEIGHT/25, "Waiting for server to begin...", WHITE, None, WIDTH/2,HEIGHT/2+HEIGHT/9.6)
