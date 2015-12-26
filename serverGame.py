@@ -1,4 +1,4 @@
-import sys, pygame, mygui, serverThread, serverGame, time
+import sys, pygame, mygui, serverThread, serverGame, time, json
 from pygame.locals import *
 from constants import *
 from deck import *
@@ -17,15 +17,19 @@ start = 0
 lastRaisedPlayer = -1
 serverTurn = 0
 
-def init(clients):
-    numberOfPlayers = len(clients) + 1
+def init(clientSockets):
+    numberOfPlayers = len(clientSockets) + 1
     #Initializing cards and players
-    for i in range(0, numberOfPlayers):
-        cards[i] = (deck.pop(),deck.pop())
-        players[i] = Player(i)
+    i = 0
+    for cSock in clientSockets:
+        cards[cSock] = (deck.pop(),deck.pop())
+        cards[i]=cards[cSock]
+        players[cSock] = Player(i)
+        players[i]=players.get(cSock)
+        i += 1
 
     serverTurn = numberOfPlayers - 1
-    players.get(start).bet(smallBlind)
+    players[start]. bet(smallBlind)
     players.get((start+1)%numberOfPlayers).bet(bigBlind)
     turn = (start + 2)%numberOfPlayers
     pot = smallBlind + bigBlind
@@ -49,8 +53,15 @@ def one_round():
             break
     broadcast()
 
-def init_broadcast():
+def init_broadcast(clientSockets):
+    for cSock in clientSockets:
+        cSock.send(cards[obj])
+    broadcast(clientSockets)
 
+def broadcast(clientSockets):
+    packet_to_send = (players,tableCards,turn)
+    for cSock in clientSockets:
+        cSock.send(packet_to_send)
 
 def start_game():
     init_broadcast() #players, client's cards, tablecards, turn
@@ -79,11 +90,12 @@ def main(screen, clientSockets):
     print "Inside serverGame file : Method main()"
     screen.fill(BACK_SCREEN)
     pygame.display.update()
+    init(clientSockets)
     time.sleep(5)
     pygame.quit()
     sys.exit()
 
-    init(clients)
+    #init(clientSockets)
     start_game()
 
 
