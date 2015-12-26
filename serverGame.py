@@ -53,9 +53,10 @@ def one_round():
             break
     broadcast()
 
+
 def init_broadcast(clientSockets):
     for cSock in clientSockets:
-        cSock.send(cards[obj])
+        cSock.send(cards[c])
     broadcast(clientSockets)
 
 def broadcast(clientSockets):
