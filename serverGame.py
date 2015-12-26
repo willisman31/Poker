@@ -19,15 +19,14 @@ serverTurn = 0
 numberOfPlayers = 0
 
 def init(clientSockets):
-    global numberOfPlayers
     numberOfPlayers = len(clientSockets) + 1
     #Initializing cards and players
     i = 0
     for cSock in clientSockets:
         cards[cSock] = (deck.pop(),deck.pop())
         cards[i]=cards[cSock]
-        players[cSock] = Player(i)
-        players[i]=players.get(cSock)
+        #players[cSock] = Player(i)
+        players[i]=Player(i)
         i += 1
 
     serverTurn = numberOfPlayers - 1
@@ -72,7 +71,7 @@ def broadcast(clientSockets):
         msgPot = str(pot)
         cSock.send(msgPlayers)
         cSock.send(msgTableCards)
-        cSock.send(msgTurn+" "+msgNumPlayers+" "msgPot)
+        cSock.send(msgTurn+" "+msgNumPlayers+" "+msgPot)
 
 def start_game():
     init_broadcast() #players, client's cards, tablecards, turn

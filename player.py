@@ -1,11 +1,10 @@
 from constants import *
 
 class Player():
-    def __init__(self,id,name="John", f=False):
+    def __init__(self,id,name="John"):
         self.id = id
         self.name = name
         self.reset()
-        self.fold = f
 
     def reset(self):
         self.fold = False
