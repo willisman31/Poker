@@ -18,5 +18,7 @@ INITMONEY = 1000
 
 
 
-BG0 = pygame.image.load("bg0.jpg")
+BG0 = pygame.image.load("images/bg0.jpg")
 BG0 = pygame.transform.scale(BG0, (WIDTH, HEIGHT))
+BG1 = pygame.image.load("images/bg1.jpg")
+BG1 = pygame.transform.scale(BG1, (WIDTH, HEIGHT))

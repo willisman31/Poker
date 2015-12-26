@@ -100,7 +100,7 @@ def main(screen, clientSockets):
     print "Inside serverGame file : Method main()"
     screen.fill(BACK_SCREEN)
     pygame.display.update()
-    init(clientSockets)
+    #init(clientSockets)
     time.sleep(5)
     pygame.quit()
     sys.exit()
