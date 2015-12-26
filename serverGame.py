@@ -56,11 +56,7 @@ def one_round():
 
 def init_broadcast(clientSockets):
     for cSock in clientSockets:
-<<<<<<< HEAD
-
-=======
         cSock.send(cards[cSock])
->>>>>>> b6ec6fe1d178b440d7b76b8b91f91960cef08fc3
     broadcast(clientSockets)
 
 def broadcast(clientSockets):
