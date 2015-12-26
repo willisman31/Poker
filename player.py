@@ -1,10 +1,11 @@
 from constants import *
 
 class Player():
-    def __init__(self,id,name="John"):
+    def __init__(self,id,name="John", f=False):
         self.id = id
         self.name = name
         self.reset()
+        self.fold = f
 
     def reset(self):
         self.fold = False
@@ -16,7 +17,7 @@ class Player():
         self.money -= amount
         self.pot += amount
 
-    def fold(self):
+    def do_fold(self):
         self.fold = True
 
 if __name__ == '__main__':

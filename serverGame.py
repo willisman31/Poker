@@ -16,8 +16,10 @@ bigBlind = smallBlind * 2
 start = 0
 lastRaisedPlayer = -1
 serverTurn = 0
+numberOfPlayers = 0
 
 def init(clientSockets):
+    global numberOfPlayers
     numberOfPlayers = len(clientSockets) + 1
     #Initializing cards and players
     i = 0
@@ -56,13 +58,21 @@ def one_round():
 
 def init_broadcast(clientSockets):
     for cSock in clientSockets:
-        cSock.send(cards[cSock])
+        msgPlayerCards = json.dumps(cards[cSock])
+        cSock.send(msgPlayerCards)
     broadcast(clientSockets)
 
 def broadcast(clientSockets):
-    packet_to_send = (players,tableCards,turn)
+
     for cSock in clientSockets:
-        cSock.send(packet_to_send)
+        msgPlayers = json.dumps(players, default=lambda o: o.__dict__)
+        msgTableCards = json.dumps(tableCards)
+        msgTurn = str(turn)
+        msgNumPlayers = str(numberOfPlayers)
+        msgPot = str(pot)
+        cSock.send(msgPlayers)
+        cSock.send(msgTableCards)
+        cSock.send(msgTurn+" "+msgNumPlayers+" "msgPot)
 
 def start_game():
     init_broadcast() #players, client's cards, tablecards, turn
