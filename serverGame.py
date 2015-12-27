@@ -117,6 +117,14 @@ class ServerGame:
     #GUI should be updated at the time broadcast
     def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
 
+        for cSock in clientSockets:
+            msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
+            msgTableCards = json.dumps(self.tableCards)
+            things = (self.turn, self.numberOfPlayers, self.pot)
+            msgThings = json.dumps(things)
+            cSock.send(msgPlayers)
+            cSock.send(msgTableCards)
+            cSock.send(msgThings)
 
 def unpause_clients(clientSockets):
     for obj in clientSockets:
