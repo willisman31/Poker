@@ -16,7 +16,7 @@ class ServerGame:
             self.numberOfUnfoldedPlayers -= 1
             self.players[self.turn].do_fold()
             self.players[self.turn].pot = 0
-        else
+        else:
             self.players[self.turn].bet(recievedBetValue)
             self.pot += recievedBetValue
             if self.players[self.turn].currentRoundBet > self.currentRoundBet:
@@ -89,14 +89,16 @@ class ServerGame:
         self.init_one_game()
         self.init_broadcast()
 
-        self.one_round()
-        self.tableCards.append(deck.pop())
-        self.tableCards.append(deck.pop())
-        self.tableCards.append(deck.pop())
-        self.one_round()
-        self.tableCards.append(deck.pop())
-        self.one_round()
-        self.tableCards.append(deck.pop())
+        time.sleep(10)
+        #
+        # self.one_round()
+        # self.tableCards.append(deck.pop())
+        # self.tableCards.append(deck.pop())
+        # self.tableCards.append(deck.pop())
+        # self.one_round()
+        # self.tableCards.append(deck.pop())
+        # self.one_round()
+        # self.tableCards.append(deck.pop())
 
         # result()
         # broadcast_result()
@@ -105,19 +107,19 @@ class ServerGame:
         self.one_game()
 
     def init_broadcast(self):   #players, client's cards, tablecards, turn, numberOfPlayers, pot, toCallAmount
-    i=0
-    for cSock in self.clientSockets:
-        msgPlayerCards = json.dumps(self.cards[cSock])
-        cSock.send(msgPlayerCards)
-        cSock.send(str(i))
-        i+=1
+        i=0
+        for cSock in self.clientSockets:
+            msgPlayerCards = json.dumps(self.cards[cSock])
+            cSock.send(msgPlayerCards)
+            cSock.send(str(i))
+            i+=1
 
-    self.broadcast()
+        self.broadcast()
 
     #GUI should be updated at the time broadcast
     def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
 
-        for cSock in clientSockets:
+        for cSock in self.clientSockets:
             msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
             msgTableCards = json.dumps(self.tableCards)
             things = (self.turn, self.numberOfPlayers, self.pot)

@@ -64,4 +64,5 @@ class PokerClient:
 
             begin = cliObj.sock.recv(1024)
             if begin == "begin":
-                clientGame.main(screen, cliObj.sock)
+                print "Unpaused"
+                clientGame.ClientGame(cliObj.sock, screen)
