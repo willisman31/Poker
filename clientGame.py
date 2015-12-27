@@ -103,8 +103,7 @@ def test(screen):
     MONEY = []
     for o in players:
         NAMES.append(players[o].name)
-        MONEY.append(players[o].money)
-
+        MONEY.append("$"+str(players[o].money))
 
     bg1 = pygame.image.load("images/bg1.jpg")
     bg1 = pygame.transform.scale(bg1, (WIDTH, HEIGHT))
@@ -143,7 +142,7 @@ def test(screen):
         if temp == numberOfPlayers:
             break
 
-
+    #Putting buttons below players
     temp = 0
     for i in ORDER:
         temp+=1
@@ -151,14 +150,15 @@ def test(screen):
         if temp == numberOfPlayers:
             break
 
+    #Putting text in buttons
     temp = 0
     for i in ORDER:
-        temp+=1
-        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, MONEY[i], WHITE, None,BOYTXT[i][0],BOYTXT[i][2] )
-        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, NAMES[i], WHITE, None,BOYTXT[i][0],BOYTXT[i][1] )
+        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(MONEY[temp]), WHITE, None,BOYTXT[i][0],BOYTXT[i][2] )
+        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, NAMES[temp], WHITE, None,BOYTXT[i][0],BOYTXT[i][1] )
         screen.blit(textMoney, textMoneyRect)
         screen.blit(textName, textNameRect)
 
+        temp+=1
         if temp == numberOfPlayers:
             break
 
