@@ -46,7 +46,7 @@ class ServerThread(object):
             self.clients.append(conn)
             self.num_of_clients = self.num_of_clients + 1
             #Creating new thread. Calling clientthread function for this function and passing conn as argument.
-            start_new_thread(self.client_thread,(conn,addr)) #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
+            #start_new_thread(self.client_thread,(conn,addr)) #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
 
         sock.close()
     def get_ip(self):

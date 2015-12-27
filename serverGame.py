@@ -89,7 +89,7 @@ class ServerGame:
         self.init_one_game()
         self.init_broadcast()
 
-        time.sleep(10)
+        time.sleep(5)
         #
         # self.one_round()
         # self.tableCards.append(deck.pop())
@@ -110,11 +110,18 @@ class ServerGame:
         i=0
         for cSock in self.clientSockets:
             msgPlayerCards = json.dumps(self.cards[cSock])
-            cSock.send(msgPlayerCards)
-            cSock.send(str(i))
+            msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
+            msgTableCards = json.dumps(self.tableCards)
+            things = (self.turn, self.numberOfPlayers, self.pot)
+            msgThings = json.dumps(things)
+
+            completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings
             i+=1
 
-        self.broadcast()
+            cSock.send(completeMessage)
+            print "Size of message sent : "+ str(sys.getsizeof(completeMessage)) +" bytes!"
+
+        #self.broadcast()
 
     #GUI should be updated at the time broadcast
     def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
@@ -124,9 +131,13 @@ class ServerGame:
             msgTableCards = json.dumps(self.tableCards)
             things = (self.turn, self.numberOfPlayers, self.pot)
             msgThings = json.dumps(things)
-            cSock.send(msgPlayers)
-            cSock.send(msgTableCards)
-            cSock.send(msgThings)
+
+            completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings
+            cSock.send(completeMessage)
+            print sys.getsizeof(completeMessage)
+            # cSock.send(msgPlayers)
+            # cSock.send(msgTableCards)
+            # cSock.send(msgThings)
 
 def unpause_clients(clientSockets):
     for obj in clientSockets:

@@ -10,38 +10,38 @@ class ClientGame:
         print "Inside ClientGame : init method"
 
         self.init_recv(clientSocket)
-        #self.main_wain(clientSocket, screen)
+        self.main(clientSocket, screen)
 
 
     def init_recv(self, clientSocket):
 
-        jsonCards = clientSocket.recv(1024)
-        self.myTurn = clientSocket.recv(1024)
-        print jsonCards
-        print self.myTurn
-        return
-
-        # jsonPlayers = clientSocket.recv(1024)
-        # jsonTblCards= clientSocket.recv(1024)
-        # jsonThings = clientSocket.recv(1024)
-
+        jsonData = clientSocket.recv(4196)
+        data = jsonData.split("::")
+        jsonCards = data[0]
+        self.myTurn = int(data[1])
+        jsonPlayers = data[2]
+        jsonTblCards= data[3]
+        jsonThings = data[4]
 
         print "Data received"
-        # self.myCards = json.loads(jsonCards)
-        #
-        # self.players = {0:[]}
-        # for key in jsonPlayers:
-        #     obj = player.Player(jsonPlayers[key]['id'], jsonPlayers[key]['name'])
-        #     obj.fold = jsonPlayers[key]['fold']
-        #     obj.pot = jsonPlayers[key]['pot']
-        #     obj.money = jsonPlayers[key]['money']
-        #
-        #     self.players[key] = obj
-        # self.tableCards = json.loads(jsonCards)
-        # self.things = json.loads(jsonThings)
-        # self.turn = self.things[0]
-        # self.numberOfPlayers = self.things[1]
-        # self.pot = self.things[2]
+        self.myCards = json.loads(jsonCards)
+        self.tableCards = json.loads(jsonTblCards)
+        self.things = json.loads(jsonThings)
+        self.turn = self.things[0]
+        self.numberOfPlayers = self.things[1]
+        self.pot = self.things[2]
+
+
+        jsonPlayers = json.loads(jsonPlayers)
+        self.players = {0:[]}
+        for key in jsonPlayers:
+            obj = player.Player(jsonPlayers[key]['turn'], jsonPlayers[key]['name'])
+            obj.fold = jsonPlayers[key]['fold']
+            obj.pot = jsonPlayers[key]['pot']
+            obj.money = jsonPlayers[key]['money']
+            obj.currentRoundBet = jsonPlayers[key]['currentRoundBet']
+
+            self.players[key] = obj
 
     def init_gui(self, screen):
 
@@ -49,12 +49,14 @@ class ClientGame:
         screen.blit(BG1, (0,0))
         screen.blit(PKT1, TBLTOPLEFT)
 
-        pygame.display.update()
         #Putting players across the table
         temp = 0
         for i in ORDER:
             temp+=1
-            screen.blit(boy0, BOYS[i])
+            if i == ORDER[0]:
+                screen.blit(boy0, BOYS[i])
+            else:
+                screen.blit(boy1, BOYS[i])
             if temp == self.numberOfPlayers:
                 break
 
@@ -78,30 +80,57 @@ class ClientGame:
             if temp == self.numberOfPlayers:
                 break
 
-        pygame.display.update()
+    def draw_boy(turn):
+        
+        screen.blit(but1, self.BOYBUT[i])
 
-
-    def main_wain (self, screen, clientSocket):
-
-        # List of coordinates for the button below player picture
+    def init_box_coord(self):
+        #List of coordinates for the button and textboxes below player picture
         self.BOYBUT = []
         self.BOYTXTBOX = []
         for i in range(12):
             self.BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
             self.BOYTXTBOX.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
 
-        self.NAMES = []
-        self.MONEY = []
-        for o in self.players:
-            self.NAMES.append(self.players[o].name)
-            self.MONEY.append("$"+str(self.players[o].money))
+
+    def main(self, clientSocket, screen):
+
+        self.turnMap = self.order_players(self.myTurn, self.numberOfPlayers)
+        self.init_box_coord()
 
         self.init_gui(screen)
+        while 1:
 
-        pygame.display.update()
-        time.sleep(5)
+            draw_boy(self.turn)
+
+            self.NAMES = []
+            self.MONEY = []
+            for o in self.players:
+                self.NAMES.append(self.players[str(o)].name)
+                self.MONEY.append("$"+str(self.players[str(o)].money))
 
 
+
+            pygame.display.update()
+
+
+
+        #time.sleep(5)
+
+    def order_players(self, myTurn, numberOfPlayers):
+        order = {0:[]}
+        order[myTurn] = 7
+
+        i = 0
+        j = 1
+        while 1:
+            if i != myTurn:
+                order[i] = ORDER[j]
+                j+=1
+            i+=1
+            if i==numberOfPlayers:
+                break
+        return order
 
 
 
@@ -171,64 +200,70 @@ def rem_boy(screen):
 
 
 def test(screen):
-    players = {0:[]}
-    players[0] = player.Player(0,"Safal")
-    players[1] = player.Player(1,"Avantika")
-    players[2] = player.Player(2,"Lalit")
-    players[3] = player.Player(3,"Kariryaa")
-    players[4] = player.Player(4,"Aneja")
-    players[5] = player.Player(5,"Raman")
-    players[6] = player.Player(6,"Ankita")
-    players[7] = player.Player(7,"Bhavya")
-
-    myTurn = 2
-    turn = 1
-    numberOfPlayers = 8
-
-    # List of coordinates for the button below player picture
-    BOYBUT = []
-    BOYTXT = []
-    for i in range(12):
-        BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
-        BOYTXT.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
-
-    NAMES = []
-    MONEY = []
-    for o in players:
-        NAMES.append(players[o].name)
-        MONEY.append("$"+str(players[o].money))
 
 
-    screen.blit(BG1, (0,0))
-    screen.blit(PKT1, TBLTOPLEFT)
+    # players = {0:[]}
+    # players[0] = player.Player(0,"Safal")
+    # players[1] = player.Player(1,"Avantika")
+    # players[2] = player.Player(2,"Lalit")
+    # players[3] = player.Player(3,"Kariryaa")
+    # players[4] = player.Player(4,"Aneja")
+    # players[5] = player.Player(5,"Raman")
+    # players[6] = player.Player(6,"Ankita")
+    # players[7] = player.Player(7,"Bhavya")
+    #
+    # myTurn = 2
+    # turn = 1
+    # numberOfPlayers = 8
+    #
+    # # List of coordinates for the button below player picture
+    # BOYBUT = []
+    # BOYTXT = []
+    # for i in range(12):
+    #     BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
+    #     BOYTXT.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
+    #
+    # NAMES = []
+    # MONEY = []
+    # for o in players:
+    #     NAMES.append(players[o].name)
+    #     MONEY.append("$"+str(players[o].money))
+    #
+    #
+    # screen.blit(BG1, (0,0))
+    # screen.blit(PKT1, TBLTOPLEFT)
+    #
+    # #Putting players across the table
+    # temp = 0
+    # for i in ORDER:
+    #     temp+=1
+    #     screen.blit(boy0, BOYS[i])
+    #     if temp == numberOfPlayers:
+    #         break
+    #
+    # #Putting buttons below players
+    # temp = 0
+    # for i in ORDER:
+    #     temp+=1
+    #     screen.blit(but1, BOYBUT[i])
+    #     if temp == numberOfPlayers:
+    #         break
+    #
+    # #Putting text in buttons
+    # temp = 0
+    # for i in ORDER:
+    #     textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(MONEY[temp]), WHITE, None,BOYTXT[i][0],BOYTXT[i][2] )
+    #     textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, NAMES[temp], WHITE, None,BOYTXT[i][0],BOYTXT[i][1] )
+    #     screen.blit(textMoney, textMoneyRect)
+    #     screen.blit(textName, textNameRect)
+    #
+    #     temp+=1
+    #     if temp == numberOfPlayers:
+    #         break
 
-    #Putting players across the table
-    temp = 0
-    for i in ORDER:
-        temp+=1
-        screen.blit(boy0, BOYS[i])
-        if temp == numberOfPlayers:
-            break
 
-    #Putting buttons below players
-    temp = 0
-    for i in ORDER:
-        temp+=1
-        screen.blit(but1, BOYBUT[i])
-        if temp == numberOfPlayers:
-            break
 
-    #Putting text in buttons
-    temp = 0
-    for i in ORDER:
-        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(MONEY[temp]), WHITE, None,BOYTXT[i][0],BOYTXT[i][2] )
-        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, NAMES[temp], WHITE, None,BOYTXT[i][0],BOYTXT[i][1] )
-        screen.blit(textMoney, textMoneyRect)
-        screen.blit(textName, textNameRect)
 
-        temp+=1
-        if temp == numberOfPlayers:
-            break
 
 
     pygame.display.update()
