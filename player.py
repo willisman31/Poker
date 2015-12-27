@@ -1,8 +1,8 @@
 from constants import *
 
 class Player():
-    def __init__(self,id,name="John"):
-        self.id = id
+    def __init__(self,turn,name="John"):
+        self.turn = turn
         self.name = name
         self.reset()
 

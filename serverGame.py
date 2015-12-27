@@ -56,9 +56,13 @@ def one_round():
 
 
 def init_broadcast(clientSockets):
+    i=0
     for cSock in clientSockets:
         msgPlayerCards = json.dumps(cards[cSock])
         cSock.send(msgPlayerCards)
+        cSock.send(str(i))
+        i+=1
+
     broadcast(clientSockets)
 
 def broadcast(clientSockets):
@@ -66,12 +70,11 @@ def broadcast(clientSockets):
     for cSock in clientSockets:
         msgPlayers = json.dumps(players, default=lambda o: o.__dict__)
         msgTableCards = json.dumps(tableCards)
-        msgTurn = str(turn)
-        msgNumPlayers = str(numberOfPlayers)
-        msgPot = str(pot)
+        things = (turn, numberOfPlayers, pot)
+        msgThings = json.dumps(things)
         cSock.send(msgPlayers)
         cSock.send(msgTableCards)
-        cSock.send(msgTurn+" "+msgNumPlayers+" "+msgPot)
+        cSock.send(msgThings)
 
 def start_game():
     init_broadcast() #players, client's cards, tablecards, turn
