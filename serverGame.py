@@ -1,92 +1,130 @@
-import sys, pygame, mygui, serverThread, serverGame, time, json
+import sys, pygame, mygui, serverThread, serverGame, time, json, copy
 from pygame.locals import *
 from constants import *
 from deck import *
 from player import *
 
+class ServerGame:
+    def __init__(self,clientSockets):
+        self.clientSockets = clientSockets
 
-deck = Deck()
-cards = {0:[]}
-players = {0:[]}
-pot = 0
-tableCards = []
-turn = -1
-smallBlind = 10
-bigBlind = smallBlind * 2
-start = 0
-lastRaisedPlayer = -1
-serverTurn = 0
-numberOfPlayers = 0
+    #what happens if player folds?
+    #suggestions:maintain new numberOfPlayers, players, turns etc for each round
+    #one match = several games, one game = 4 rounds
+    def update_game(self):
+        if recievedFoldValue == True:
+            self.numberOfUnfoldedPlayers -= 1
+            self.players[self.turn].do_fold()
+            self.players[self.turn].pot = 0
+        else
+            self.players[self.turn].bet(recievedBetValue)
+            self.pot += recievedBetValue
+            if self.players[self.turn].currentRoundBet > self.currentRoundBet:
+                 self.currentRoundBet = self.players[self.turn].currentRoundBet
+                 self.lastRaisedPlayer = self.turn
 
-def init(clientSockets):
-    numberOfPlayers = len(clientSockets) + 1
-    #Initializing cards and players
-    i = 0
-    for cSock in clientSockets:
-        cards[cSock] = (deck.pop(),deck.pop())
-        cards[i]=cards[cSock]
-        #players[cSock] = Player(i)
-        players[i]=Player(i)
-        i += 1
 
-    serverTurn = numberOfPlayers - 1
-    players[start]. bet(smallBlind)
-    players.get((start+1)%numberOfPlayers).bet(bigBlind)
-    turn = (start + 2)%numberOfPlayers
-    pot = smallBlind + bigBlind
-    lastRaisedPlayer = turn
-    #wake_clients(clients)
+    def init_one_round(self):
+        for i in range(0, self.numberOfPlayers):
+            self.players[i].currentRoundBet = 0
 
-#what happens if player folds?
-#suggestions:maintain new numberOfPlayers, players, turns etc for each round
-#one match = several games, one game = 4 rounds
-def one_round():
-    while True:
-        broadcast()
-        if turn == serverTurn:
-            server_move()
+        if not self.tableCards:
+            self.players[self.start].currentRoundBet = self.smallBlind
+            self.players[(self.start + 1)%self.numberOfPlayers].currentRoundBet = self.bigBlind
+            self.currentRoundBet = self.bigBlind
         else:
-            wait_for_client_move()
-
-        update_game()
-        turn = (turn+1)%numberOfPlayers
-        if turn == lastRaisedPlayer:
-            break
-    broadcast()
+            self.currentRoundBet = 0
 
 
-def init_broadcast(clientSockets):
-    for cSock in clientSockets:
-        msgPlayerCards = json.dumps(cards[cSock])
+    def one_round(self):
+        self.init_one_round()
+        while True:
+            if not self.players[self.turn].fold and self.players[self.turn].money != 0:
+                self.broadcast()
+                if self.turn == self.serverTurn:
+                    server_move()
+                else:
+                    wait_for_client_move()
+                self.update_game()
+            self.turn = (self.turn+1)%self.numberOfPlayers
+            if self.turn == self.lastRaisedPlayer or self.numberOfUnfoldedPlayers <= 1:
+                break
+        self.broadcast()
+
+    def init_one_game(self):
+        self.deck = Deck()
+        self.cards = {0:[]}
+        self.players = {0:[]}
+        self.tableCards = []
+        self.smallBlind = 10
+        self.bigBlind = self.smallBlind * 2
+        self.start = 0
+
+        self.numberOfPlayers = len(self.clientSockets) + 1
+        self.numberOfUnfoldedPlayers = self.numberOfPlayers
+        #Initializing cards and players
+        i = 0
+        for cSock in self.clientSockets:
+            self.cards[cSock] = (self.deck.pop(),self.deck.pop())
+            self.cards[i] = self.cards[cSock]
+            #players[cSock] = Player(i)
+            self.players[i] = Player(i)
+            i += 1
+
+        self.serverTurn = self.numberOfPlayers - 1
+        self.players[self.serverTurn] = Player(self.serverTurn,"Server")
+        self.cards[self.serverTurn] = (self.deck.pop(),self.deck.pop()) #Server Cards
+        #self.serverPlayer = Player(serverTurn)
+
+
+        self.players[self.start].bet(self.smallBlind)
+
+        self.players[((self.start)+1)%(self.numberOfPlayers)].bet(self.bigBlind)
+        self.turn = (self.start + 2)%self.numberOfPlayers
+        self.pot = self.smallBlind + self.bigBlind
+        self.lastRaisedPlayer = self.turn
+
+
+    def one_game(self):
+        self.init_one_game()
+        self.init_broadcast()
+
+        self.one_round()
+        self.tableCards.append(deck.pop())
+        self.tableCards.append(deck.pop())
+        self.tableCards.append(deck.pop())
+        self.one_round()
+        self.tableCards.append(deck.pop())
+        self.one_round()
+        self.tableCards.append(deck.pop())
+
+        # result()
+        # broadcast_result()
+
+    def start_game(self):
+        self.one_game()
+
+    def init_broadcast(self):   #players, client's cards, tablecards, turn, numberOfPlayers, pot, toCallAmount
+    i=0
+    for cSock in self.clientSockets:
+        msgPlayerCards = json.dumps(self.cards[cSock])
         cSock.send(msgPlayerCards)
-    broadcast(clientSockets)
+        cSock.send(str(i))
+        i+=1
 
-def broadcast(clientSockets):
+    self.broadcast()
 
-    for cSock in clientSockets:
-        msgPlayers = json.dumps(players, default=lambda o: o.__dict__)
-        msgTableCards = json.dumps(tableCards)
-        msgTurn = str(turn)
-        msgNumPlayers = str(numberOfPlayers)
-        msgPot = str(pot)
-        cSock.send(msgPlayers)
-        cSock.send(msgTableCards)
-        cSock.send(msgTurn+" "+msgNumPlayers+" "+msgPot)
+    #GUI should be updated at the time broadcast
+    def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
 
-def start_game():
-    init_broadcast() #players, client's cards, tablecards, turn
-
-    one_round()
-    tableCards.append(deck.pop())
-    tableCards.append(deck.pop())
-    tableCards.append(deck.pop())
-    one_round()
-    tableCards.append(deck.pop())
-    one_round()
-    tableCards.append(deck.pop())
-
-    result()
-    broadcast_result()
+        for cSock in clientSockets:
+            msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
+            msgTableCards = json.dumps(self.tableCards)
+            things = (self.turn, self.numberOfPlayers, self.pot)
+            msgThings = json.dumps(things)
+            cSock.send(msgPlayers)
+            cSock.send(msgTableCards)
+            cSock.send(msgThings)
 
 def unpause_clients(clientSockets):
     for obj in clientSockets:
@@ -100,7 +138,10 @@ def main(screen, clientSockets):
     print "Inside serverGame file : Method main()"
     screen.fill(BACK_SCREEN)
     pygame.display.update()
-    #init(clientSockets)
+
+    game = ServerGame(clientSockets)
+    game.start_game()
+
     time.sleep(5)
     pygame.quit()
     sys.exit()

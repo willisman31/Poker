@@ -1,13 +1,43 @@
-import sys, pygame, mygui, serverThread, serverGame, time
+import sys, pygame, mygui, serverThread, serverGame, time, player
 from pygame.locals import *
 from constants import *
+from operator import sub
+
+
+class ClientGame:
+    def __init__(self, clientSocket):
+        self.init_recv(clientSocket)
+
+
+    def init_recv(clientSocket):
+
+        jsonCards = clientSocket.recv(1024)
+        self.myTurn = int(clientSocket.recv(1024))
+        jsonPlayers = clientSocket.recv(1024)
+        jsonTblCards= clientSocket.recv(1024)
+        jsonThings = clientSocket.recv(1024)
+
+
+        self.myCards = json.loads(jsonCards)
+
+        self.players = {0:[]}
+        for key in jsonPlayers:
+            obj = player.Player(jsonPlayers[key]['id'], jsonPlayers[key]['name'])
+            obj.fold = jsonPlayers[key]['fold']
+            obj.pot = jsonPlayers[key]['pot']
+            obj.money = jsonPlayers[key]['money']
+
+            self.players[key] = obj
+        self.tableCards = json.loads(jsonCards)
+        self.things = json.loads(jsonThings)
+        self.turn = self.things[0]
+        self.numberOfPlayers = self.things[1]
+        self.pot = self.things[2]
+
 
 def main (screen, clientSocket):
-    print "Inside clientGame file : Method main()"
 
-    bg1 = pygame.image.load("images/bg1.jpg")
-    bg1 = pygame.transform.scale(bg1, (WIDTH, HEIGHT))
-    screen.blit(bg1, (0,0))
+    screen.blit(BG1, (0,0))
     pygame.display.update()
     #time.sleep(5)
 
@@ -22,12 +52,29 @@ def main (screen, clientSocket):
     #         recv_broadcast()
     #         update_game()
 
+def addTuple(a, b):
+    return map(sum, zip(a, b))
+
+def subTuble(a, b):
+    return map(sub, a, b)
+
 def test(screen):
+
+    players = {0:[]}
+    players[0] = player.Player(0,"Safal")
+    players[1] = player.Player(1,"Avantika")
+    players[2] = player.Player(2,"Lalit")
+    players[3] = player.Player(3,"Kariryaa")
+
+    myTurn = 2
+    turn = 1
+    numberOfPlayers = 4
 
     PICSIZE = (int(HEIGHT/4.8), int(HEIGHT/4.8)) # 100 * 100
     TBLTOPLEFT = (int(HEIGHT/6), int(HEIGHT/6)) # (80, 80)
     TBLWIDTH = HEIGHT
     TBLHEIGHT = HEIGHT/2
+
     BOY0 = (70,30)
     BOY1 = (170,0)
     BOY2 = (270,0)
@@ -40,6 +87,23 @@ def test(screen):
     BOY9 = (470,250)
     BOY10= (30,140)
     BOY11= (510,140)
+    BOYS = (BOY0, BOY1, BOY2, BOY3, BOY4, BOY5, BOY6, BOY7, BOY8, BOY9, BOY10, BOY11 )
+
+    #Order in which players sit
+    ORDER= (7, 2, 10, 11, 4, 5, 0, 9, 1, 8, 3, 6)
+
+    # List of coordinates for the button below player picture
+    BOYBUT = []
+    BOYTXT = []
+    for i in range(12):
+        BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
+        BOYTXT.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
+
+    NAMES = []
+    MONEY = []
+    for o in players:
+        NAMES.append(players[o].name)
+        MONEY.append(players[o].money)
 
 
     bg1 = pygame.image.load("images/bg1.jpg")
@@ -48,6 +112,8 @@ def test(screen):
     tableScale = 2
     pkt1 = pygame.image.load("images/pkt0.png")
     pkt1 = pygame.transform.scale(pkt1, (int(tableScale*HEIGHT/2), HEIGHT/2)) #480 * 240
+
+
 
     boy0 = pygame.image.load("images/boy1.png")
     boy0 = pygame.transform.scale(boy0, PICSIZE)
@@ -69,32 +135,34 @@ def test(screen):
     screen.blit(bg1, (0,0))
     screen.blit(pkt1, TBLTOPLEFT)
 
-    screen.blit(boy0, BOY0)
-    screen.blit(boy1, BOY1)
-    screen.blit(boy2, BOY2)
-    screen.blit(boy2, BOY3)
-    screen.blit(boy1, BOY4)
+    #Putting players across the table
+    temp = 0
+    for i in ORDER:
+        temp+=1
+        screen.blit(boy0, BOYS[i])
+        if temp == numberOfPlayers:
+            break
 
-    screen.blit(boy1, BOY5)
-    screen.blit(boy3, BOY6)
-    screen.blit(boy3, BOY7)
-    screen.blit(boy1, BOY8)
-    screen.blit(boy1, BOY9)
 
-    screen.blit(boy1, BOY10)
-    screen.blit(boy1, BOY11)
+    temp = 0
+    for i in ORDER:
+        temp+=1
+        screen.blit(but1, BOYBUT[i])
+        if temp == numberOfPlayers:
+            break
 
-    screen.blit(but1, (35,226))
-    screen.blit(but1, (75,336))
-    screen.blit(but1, (75,116))
-    screen.blit(but1, (175,86))
-    screen.blit(but1, (275,86))
-    screen.blit(but1, (375,86))
+    temp = 0
+    for i in ORDER:
+        temp+=1
+        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, MONEY[i], WHITE, None,BOYTXT[i][0],BOYTXT[i][2] )
+        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, NAMES[i], WHITE, None,BOYTXT[i][0],BOYTXT[i][1] )
+        screen.blit(textMoney, textMoneyRect)
+        screen.blit(textName, textNameRect)
 
-    textPort, textPortRect = mygui.print_text('freesansbold.ttf', 13, "$100,234", WHITE, None,80,248 )
-    textPort2, textPortRect2 = mygui.print_text('freesansbold.ttf', 13, "Kariryaa", WHITE, None,80,234 )
-    screen.blit(textPort, textPortRect)
-    screen.blit(textPort2, textPortRect2)
+        if temp == numberOfPlayers:
+            break
+
+
 
 
     pygame.display.update()
