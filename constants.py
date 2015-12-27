@@ -34,6 +34,14 @@ boy3 = pygame.image.load("images/boy4.png")
 boy3 = pygame.transform.scale(boy3, PICSIZE)
 but1 = pygame.image.load("images/but1.png")
 but1 = pygame.transform.scale(but1, (90,30))
+but2 = pygame.image.load("images/but0.png")
+but2 = pygame.transform.scale(but2, (120,30))
+but3 = pygame.image.load("images/but4.png")
+but3 = pygame.transform.scale(but3, (120,30))
+but4 = pygame.image.load("images/but5.png")
+but4 = pygame.transform.scale(but4, (120,30))
+but5 = pygame.image.load("images/but6.png")
+but5 = pygame.transform.scale(but5, (120,30))
 
 
 
@@ -59,5 +67,4 @@ BOY11= (30,140)
 BOYS = (BOY0, BOY1, BOY2, BOY3, BOY4, BOY5, BOY6, BOY7, BOY8, BOY9, BOY10, BOY11 )
 
 #Order in which players sit
-#ORDER= (7, 2, 10, 11, 4, 5, 0, 9, 1, 8, 3, 6)
 ORDER = (8, 2, 11, 5, 4, 10, 0, 6, 1, 7, 3, 9)
