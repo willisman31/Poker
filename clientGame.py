@@ -43,6 +43,13 @@ class ClientGame:
 
             self.players[key] = obj
 
+        self.NAMES = []
+        self.MONEY = []
+        for o in self.players:
+            self.NAMES.append(self.players[str(o)].name)
+            self.MONEY.append("$"+str(self.players[str(o)].money))
+
+
     def init_gui(self, screen):
 
         print "Inside init_gui"
@@ -50,44 +57,38 @@ class ClientGame:
         screen.blit(PKT1, TBLTOPLEFT)
 
         #Putting players across the table
-        temp = 0
-        for i in ORDER:
-            temp+=1
-            if i == ORDER[0]:
-                screen.blit(boy0, BOYS[i])
-            else:
-                screen.blit(boy1, BOYS[i])
-            if temp == self.numberOfPlayers:
-                break
+        for i in range(self.numberOfPlayers):
+                screen.blit(boy1, BOYS[self.turnMap[i]])
 
-        #Putting buttons below players
-        temp = 0
-        for i in ORDER:
-            temp+=1
-            screen.blit(but1, self.BOYBUT[i])
-            if temp == self.numberOfPlayers:
-                break
+        screen.blit(boy0, BOYS[8])
 
-        #Putting text in buttons
-        temp = 0
-        for i in ORDER:
-            textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(self.MONEY[temp]), WHITE, None,self.BOYTXTBOX[i][0],self.BOYTXTBOX[i][2] )
-            textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, self.NAMES[temp], WHITE, None,self.BOYTXTBOX[i][0],self.BOYTXTBOX[i][1] )
-            screen.blit(textMoney, textMoneyRect)
-            screen.blit(textName, textNameRect)
+        #Putting textbuttons
+        for i in range(self.numberOfPlayers):
+            self.draw_boy_box(screen, i)
 
-            temp+=1
-            if temp == self.numberOfPlayers:
-                break
+    def draw_boy(self, id, myTurn, turn):
 
-    def draw_boy(turn):
-        
-        screen.blit(but1, self.BOYBUT[i])
+        if id == myTurn and id == turn :
+            screen.blit(boy3, BOYS[self.turnMap[id]])
+        elif id == myTurn and id != turn :
+            screen.blit(boy1, BOYS[self.turnMap[id]])
+        elif id != myTurn and id == turn :
+            screen.blit(boy4, BOYS[self.turnMap[id]])
+        else :
+            screen.blit(boy2, BOYS[self.turnMap[id]])
+
+    def draw_boy_box(self, screen, i):
+        screen.blit(but1, self.BOYBUT[self.turnMap[i]])
+
+        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(self.MONEY[i]), WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2] )
+        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, self.NAMES[i], WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][1] )
+        screen.blit(textMoney, textMoneyRect)
+        screen.blit(textName, textNameRect)
 
     def init_box_coord(self):
         #List of coordinates for the button and textboxes below player picture
         self.BOYBUT = []
-        self.BOYTXTBOX = []
+        self.BOYTXTBOX = [] # Tuple of 3 coordinates. Two different y coordinates and one same x coordinate for the text (x, y1, y2)
         for i in range(12):
             self.BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
             self.BOYTXTBOX.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
@@ -99,38 +100,46 @@ class ClientGame:
         self.init_box_coord()
 
         self.init_gui(screen)
-        while 1:
+        # while 1:
+        #     self.MONEY = []
+        #     for o in self.players:
+        #         self.MONEY.append("$"+str(self.players[str(o)].money))
+        #
+        #     draw_boy(self.turn, self.myTurn, self.turn)
+        #     draw_boy_box(self.turn)
+        #
+        #     if self.myTurn == self.turn:
+        #         pass
+        #     else:
+        #         self.recv()
+        #
+        #     pygame.display.update()
 
-            draw_boy(self.turn)
 
-            self.NAMES = []
-            self.MONEY = []
-            for o in self.players:
-                self.NAMES.append(self.players[str(o)].name)
-                self.MONEY.append("$"+str(self.players[str(o)].money))
+        pygame.display.update()
+        time.sleep(5)
 
-
-
-            pygame.display.update()
-
-
-
-        #time.sleep(5)
-
-    def order_players(self, myTurn, numberOfPlayers):
+    def order_players(self, myturn, numberOfPlayers):
         order = {0:[]}
-        order[myTurn] = 7
-
-        i = 0
-        j = 1
-        while 1:
-            if i != myTurn:
-                order[i] = ORDER[j]
-                j+=1
-            i+=1
-            if i==numberOfPlayers:
+        fo = list(ORDER[:numberOfPlayers])
+        fo.sort()
+        while True:
+            if fo[0] == 8:  #8 is the middle player for now
                 break
+            temp = fo[0]
+            del fo[0]
+            fo.append(temp)
+        fu = range(0, numberOfPlayers)
+        while True:
+            if fu[0] == myturn:
+                break
+            temp = fu[0]
+            del fu[0]
+            fu.append(temp)
+        for i in range(0, numberOfPlayers):
+            order[fu[i]] = fo[i]
         return order
+
 
 
 

@@ -61,25 +61,3 @@ BOYS = (BOY0, BOY1, BOY2, BOY3, BOY4, BOY5, BOY6, BOY7, BOY8, BOY9, BOY10, BOY11
 #Order in which players sit
 #ORDER= (7, 2, 10, 11, 4, 5, 0, 9, 1, 8, 3, 6)
 ORDER = (8, 2, 11, 5, 4, 10, 0, 6, 1, 7, 3, 9)
-
-def order_player(self, myturn, numberOfPlayers):
-    order = {0:[]}
-    fo = ORDER[:numberOfPlayers]
-    fo = list(fo)
-    fo.sort()
-    while True:
-        if fo[0] == 8:  #8 is the middle player for now
-            break
-        temp = fo[0]
-        del fo[0]
-        fo.append(temp)
-    fu = range(0, numberOfPlayers)
-    while True:
-        if fu[0] == myturn:
-            break
-        temp = fu[0]
-        del fu[0]
-        fu.append(temp)
-    for i in range(0, numberOfPlayers):
-        order[fu[i]] = fo[i]
-    return order
