@@ -52,6 +52,13 @@ class PokerClient:
         if connect:
             serIP = input_ip.get_text()
             serPort = input_port.get_text()
+            if serIP == "1":
+                serIP = "10.42.0.45"
+            elif serIP == "2":
+                serIP = "172.24.136.242"
+
+            if serPort =="":
+                serPort = "1234"
             cliObj = clientThread.ClientThread(str(serIP),int(serPort))
 
             #Button1.delete_button(screen, BACK_SCREEN)

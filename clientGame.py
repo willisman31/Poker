@@ -63,9 +63,7 @@ class ClientGame:
 
         #Putting players across the table
         for i in range(self.numberOfPlayers):
-                screen.blit(boy1, BOYS[self.turnMap[i]])
-
-        screen.blit(boy0, BOYS[8])
+            self.draw_boy(screen,i,self.myTurn, self.turn)
 
         #Putting textbuttons
         for i in range(self.numberOfPlayers):

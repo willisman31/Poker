@@ -98,17 +98,17 @@ class ServerGame:
         self.infoFlag = 0          # round 0
         self.one_round()
 
-        self.tableCards.append(deck.pop())
-        self.tableCards.append(deck.pop())
-        self.tableCards.append(deck.pop())
+        self.tableCards.append(self.deck.pop())
+        self.tableCards.append(self.deck.pop())
+        self.tableCards.append(self.deck.pop())
         self.infoFlag = 1         # round 1
         self.one_round()
 
-        self.tableCards.append(deck.pop())
+        self.tableCards.append(self.deck.pop())
         self.infoFlag = 2         # round 2
         self.one_round()
 
-        self.tableCards.append(deck.pop())
+        self.tableCards.append(self.deck.pop())
         self.infoFlag = 3         # round 3
         self.one_round()
 
@@ -141,8 +141,8 @@ class ServerGame:
 
 
     def result(self):
-        winner = numberOfPlayers-1      # Server is the winner
-        self.players[winner].money += self.pot
+        self.winner = self.numberOfPlayers-1      # Server is the winner
+        self.players[self.winner].money += self.pot
         self.pot = 0
         #self.broadcast()
 
@@ -225,26 +225,32 @@ class ServerGame:
              pygame.display.update()
 
         exTurn = self.turn
+        tempTurn = (self.turn + 1)%self.numberOfPlayers
+        while 1:
+            if not self.players[tempTurn].fold and self.players[tempTurn].money != 0:
+                break
+            tempTurn = (tempTurn+1)%self.numberOfPlayers
         # self.recv(clientSocket)
         self.update_MONEY()
 
-        self.draw_boy(screen, self.turn, self.serverTurn, self.turn)
+        self.draw_boy(screen, tempTurn, self.serverTurn, tempTurn)
         self.draw_boy_box(screen, self.turn)
+
+        self.draw_boy(screen, exTurn, self.serverTurn, tempTurn)
+        self.draw_boy_box(screen, exTurn)
 
         pygame.display.update()
         return state
 
     def init_gui(self, screen):
 
-        print "Inside init_gui of serverGame"
+        print "Inside init_gui"
         screen.blit(BG1, (0,0))
         screen.blit(PKT1, TBLTOPLEFT)
 
         #Putting players across the table
         for i in range(self.numberOfPlayers):
-                screen.blit(boy1, BOYS[self.turnMap[i]])
-
-        screen.blit(boy0, BOYS[8])
+            self.draw_boy(screen,i,self.serverTurn, self.turn)
 
         #Putting textbuttons
         for i in range(self.numberOfPlayers):
@@ -337,8 +343,6 @@ def main(screen, clientSockets):
 
     unpause_clients(clientSockets)
     print "Inside serverGame file : Method main()"
-    screen.fill(BACK_SCREEN)
-    pygame.display.update()
 
     game = ServerGame(clientSockets,screen)
     game.start_game()
