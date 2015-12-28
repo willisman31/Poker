@@ -9,8 +9,8 @@ class ClientGame:
 
         print "Inside ClientGame : init method"
 
-        self.test(screen)
-        #self.recv(clientSocket)
+        #self.test(screen)
+        self.recv(clientSocket)
         self.main(clientSocket, screen)
 
 
@@ -105,19 +105,21 @@ class ClientGame:
         self.init_box_coord()
 
         self.init_gui(screen)
+
+        butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
+        butStr = ["Check", "Fold", "Raise", "All-in", "Call"]
+        butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30),]
+
         while 1:
             if self.myTurn == self.turn:
 
-                butChk = mygui.Button()
-                butChk.create_button_image(screen, but5, 198, 405, 120, 30, "Check", 16, WHITE)
-                butFold = mygui.Button()
-                butFold.create_button_image(screen, but5, 322, 405, 120, 30, "Fold", 16, WHITE)
-                butRaise = mygui.Button()
-                butRaise.create_button_image(screen, but5, 198, 439, 120, 30, "Raise", 16, WHITE)
-                butAllIn = mygui.Button()
-                butAllIn.create_button_image(screen, but5, 322, 439, 120, 30, "All-in", 16, WHITE)
+                #Create all buttons
+                for o in range(4):
+                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
                 pygame.display.update()
+
+                butHover = [False, False, False, False]
 
                 quit = False
                 while not quit:
@@ -126,48 +128,63 @@ class ClientGame:
                             pygame.quit()
                             sys.exit()
 
+                        #Mouse Hover handling
+                        MOUSEPOS = pygame.mouse.get_pos()
+                        for o in range(4):
+                            if butList[o].hover(MOUSEPOS):
+                                if not butHover[o]:
+                                    screen.blit(BG1,(butXY[o][0],butXY[o][1]),butXY[o])
+                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+                                    pygame.display.update()
+                                    butHover[o] = True
+                            else:
+                                if butHover[o]:
+                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+                                    pygame.display.update()
+                                    butHover[o] = False
+
+                        #Mouse click handling
                         isSend = False
                         if event.type == MOUSEBUTTONDOWN:
-                            if butChk.pressed(pygame.mouse.get_pos()):
+                            if butList[0].pressed(pygame.mouse.get_pos()):
                                 state = 0
                                 isSend = True
-                            elif butFold.pressed(pygame.mouse.get_pos()):
+                            elif butList[1].pressed(pygame.mouse.get_pos()):
                                 state = -1
                                 isSend = True
-                            elif butRaise.pressed(pygame.mouse.get_pos()):
-                                state = 100 #Change it later
+                            elif butList[2].pressed(pygame.mouse.get_pos()):
+                                state = (self.toCallAmount)*2 #Change it later
                                 isSend = True
-                            elif butAllIn.pressed(pygame.mouse.get_pos()):
+                            elif butList[3].pressed(pygame.mouse.get_pos()):
                                 state = self.MONEY[self.myTurn]
                                 isSend = True
 
                         if isSend == True:
-                            # clientSocket.send(str(state))
+                            clientSocket.send(str(state))
                             isSend = False
                             quit = True
                             break
 
 
             else:
-                 screen.blit(BG1,(198,405),(198,405,244,64))
+                screen.blit(BG1,(198,405),(198,405,244,64))
 
-                 butChk = mygui.Button()
-                 butChk.create_button_image(screen, but4, 198, 405, 120, 30, "Check", 16, WHITE)
-                 butFold = mygui.Button()
-                 butFold.create_button_image(screen, but4, 322, 405, 120, 30, "Fold", 16, WHITE)
-                 butRaise = mygui.Button()
-                 butRaise.create_button_image(screen, but4, 198, 439, 120, 30, "Raise", 16, WHITE)
-                 butAllIn = mygui.Button()
-                 butAllIn.create_button_image(screen, but4, 322, 439, 120, 30, "All-in", 16, WHITE)
+                #Create all buttons
+                for o in range(4):
+                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
-                 pygame.display.update()
+                pygame.display.update()
 
             exTurn = self.turn
-            # self.recv(clientSocket)
+            self.recv(clientSocket)
             self.update_game()
 
             self.draw_boy(screen, self.turn, self.myTurn, self.turn)
             self.draw_boy_box(screen, self.turn)
+
+            self.draw_boy(screen, exTurn, self.myTurn, self.turn)
+            self.draw_boy_box(screen, exTurn)
+
 
             pygame.display.update()
 
@@ -222,9 +239,11 @@ class ClientGame:
         self.players['6'] = player.Player(6,"Ankita")
         self.players['7'] = player.Player(7,"Bhavya")
 
-        self.myTurn = 2
+        self.myTurn = 0
         self.turn = 0
         self.numberOfPlayers = 8
+
+        self.toCallAmount = 20
 
         self.NAMES = []
         self.MONEY = []
