@@ -1,6 +1,7 @@
 
 import pygame, string
 from pygame.locals import *
+from constants import *
 
 pygame.init()
 
@@ -27,14 +28,35 @@ class Button:
         surface = self.draw_button(surface, color, length, height, x, y, width)
         surface = self.write_text(surface, text, text_color, length, height, x, y)
         self.rect = pygame.Rect(x,y, length, height)
+        self.rect.topleft = (x-5, y-5)
+        self.rect.size = (length + 10)
         self.text = text
         return surface
 
     def write_text(self, surface, text, text_color, length, height, x, y):
         font_size = int(length//len(text))
         myFont = pygame.font.SysFont("Calibri", font_size)
-        myText = myFont.render(text, 1, text_color)
+        myText = myFont.render(text, True, text_color)
         surface.blit(myText, ((x+length/2) - myText.get_width()/2, (y+height/2) - myText.get_height()/2))
+        return surface
+
+    def create_button_image(self, surface, image, x, y, length, height, text, text_size, text_color, text_font = "freesansbold.ttf"):
+
+        image = pygame.transform.scale(image, (length,height))
+        surface.blit(image, (x, y))
+        surface = self.write_text_image(surface, text, text_color, text_size, text_font, length, height, x, y)
+        self.rect = pygame.Rect(x,y, length, height)
+        self.text = text
+        return surface
+
+    def write_text_image(self, surface, text, text_color, font_size, text_font, length, height, x, y):
+
+        myFont = pygame.font.Font(text_font, font_size)
+        myText = myFont.render(text, True, text_color)
+        textRectObj = myText.get_rect()
+        textRectObj.center = (x + length/2, y + height/2)
+        surface.blit(myText, textRectObj)
+        # surface.blit(myText, ((x+length/2) - myText.get_width()/2, (y+height/2) - myText.get_height()/2))
         return surface
 
     def draw_button(self, surface, color, length, height, x, y, width):
@@ -62,13 +84,6 @@ class Button:
                 else: return False
             else: return False
         else: return False
-
-    def delete_button(self, screen, color):
-        #This function just removes the button from the screen. It is still present logically.
-        self.rect.topleft = (self.rect.topleft[0]-10, self.rect.topleft[1]-10)
-        self.rect.size = (self.rect.width + 20, self.rect.height + 20)
-        pygame.draw.rect(screen, color, self.rect)
-
 
 
 #TextBox Code

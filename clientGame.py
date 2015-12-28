@@ -10,11 +10,13 @@ class ClientGame:
         print "Inside ClientGame : init method"
 
         self.test(screen)
-        #self.init_recv(clientSocket)
+        #self.recv(clientSocket)
         self.main(clientSocket, screen)
 
 
-    def init_recv(self, clientSocket):
+    def recv(self, clientSocket):
+
+        #playerCard, myTurn, Players, tblcards, things
 
         jsonData = clientSocket.recv(4196)
         data = jsonData.split("::")
@@ -31,6 +33,9 @@ class ClientGame:
         self.turn = int(self.things[0])
         self.numberOfPlayers = int(self.things[1])
         self.pot = int(self.things[2])
+        self.toCallAmount = int(self.things[3])
+        self.winner = int(self.things[4])
+        self.infoFlag = int(self.things[5])
 
         jsonPlayers = json.loads(jsonPlayers)
         self.players = {0:[]}
@@ -101,40 +106,81 @@ class ClientGame:
 
         self.init_gui(screen)
         while 1:
-            self.MONEY = []
-            for o in self.players:
-                self.MONEY.append("$"+str(self.players[str(o)].money))
+            if self.myTurn == self.turn:
+
+                butChk = mygui.Button()
+                butChk.create_button_image(screen, but5, 198, 405, 120, 30, "Check", 16, WHITE)
+                butFold = mygui.Button()
+                butFold.create_button_image(screen, but5, 322, 405, 120, 30, "Fold", 16, WHITE)
+                butRaise = mygui.Button()
+                butRaise.create_button_image(screen, but5, 198, 439, 120, 30, "Raise", 16, WHITE)
+                butAllIn = mygui.Button()
+                butAllIn.create_button_image(screen, but5, 322, 439, 120, 30, "All-in", 16, WHITE)
+
+                pygame.display.update()
+
+                quit = False
+                while not quit:
+                    for event in pygame.event.get():
+                        if event.type == QUIT:
+                            pygame.quit()
+                            sys.exit()
+
+                        isSend = False
+                        if event.type == MOUSEBUTTONDOWN:
+                            if butChk.pressed(pygame.mouse.get_pos()):
+                                state = 0
+                                isSend = True
+                            elif butFold.pressed(pygame.mouse.get_pos()):
+                                state = -1
+                                isSend = True
+                            elif butRaise.pressed(pygame.mouse.get_pos()):
+                                state = 100 #Change it later
+                                isSend = True
+                            elif butAllIn.pressed(pygame.mouse.get_pos()):
+                                state = self.MONEY[self.myTurn]
+                                isSend = True
+
+                        if isSend == True:
+                            # clientSocket.send(str(state))
+                            isSend = False
+                            quit = True
+                            break
+
+
+            else:
+                 screen.blit(BG1,(198,405),(198,405,244,64))
+
+                 butChk = mygui.Button()
+                 butChk.create_button_image(screen, but4, 198, 405, 120, 30, "Check", 16, WHITE)
+                 butFold = mygui.Button()
+                 butFold.create_button_image(screen, but4, 322, 405, 120, 30, "Fold", 16, WHITE)
+                 butRaise = mygui.Button()
+                 butRaise.create_button_image(screen, but4, 198, 439, 120, 30, "Raise", 16, WHITE)
+                 butAllIn = mygui.Button()
+                 butAllIn.create_button_image(screen, but4, 322, 439, 120, 30, "All-in", 16, WHITE)
+
+                 pygame.display.update()
+
+            exTurn = self.turn
+            # self.recv(clientSocket)
+            self.update_game()
 
             self.draw_boy(screen, self.turn, self.myTurn, self.turn)
             self.draw_boy_box(screen, self.turn)
 
-
-            screen.blit(but5, (198,405))
-            screen.blit(but5, (322,405))
-            screen.blit(but5, (198,439))
-            screen.blit(but5, (322,439))
-            textChk, textChkRect = mygui.print_text('freesansbold.ttf', 16, "Check", WHITE, None,258,420)
-            textFold, textFoldRect = mygui.print_text('freesansbold.ttf', 16, "Fold", WHITE, None,388,420)
-            textRaise, textRaiseRect = mygui.print_text('freesansbold.ttf', 16, "All In", WHITE, None,258,454)
-            textAllIn, textAllInRect = mygui.print_text('freesansbold.ttf', 16, "Raise", WHITE, None,388,454)
-            screen.blit(textChk, textChkRect)
-            screen.blit(textFold, textFoldRect)
-            screen.blit(textRaise, textRaiseRect)
-            screen.blit(textAllIn, textAllInRect)
-            #screen.blit(textName, textNameRect)
-
-
-            #
-            # if self.myTurn == self.turn:
-            #     pass
-            # else:
-            #     self.recv()
-
             pygame.display.update()
-            break
 
-        pygame.display.update()
-        time.sleep(60)
+
+        # pygame.display.update()
+        # time.sleep(60)
+
+    def update_game(self):
+        self.MONEY = []
+        for o in self.players:
+            self.MONEY.append("$"+str(self.players[str(o)].money))
+
+
 
     def order_players(self, myturn, numberOfPlayers):
         order = {0:[]}
@@ -164,17 +210,6 @@ class ClientGame:
         #pygame.display.update()
         #time.sleep(5)
 
-        # init_recv()
-        # update_game()
-        #
-        # while 1:
-        #     if turn == myturn:
-        #         do_some()
-        #         send_server()
-        #     else:
-        #         recv_broadcast()
-        #         update_game()
-
     def test(self, screen):
 
         self.players = {0:[]}
@@ -197,12 +232,6 @@ class ClientGame:
             self.NAMES.append(self.players[str(i)].name)
             self.MONEY.append("$"+str(self.players[str(i)].money))
 
-
-def addTuple(a, b):
-    return map(sum, zip(a, b))
-
-def subTuble(a, b):
-    return map(sub, a, b)
 
 if __name__ == '__main__':
     pygame.init()
