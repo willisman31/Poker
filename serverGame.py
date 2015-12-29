@@ -38,6 +38,9 @@ class ServerGame:
     def one_round(self):
         self.init_one_round()
 
+        if self.numberOfUnfoldedPlayers <= 1:
+            return
+
         self.gui_main(self.screen)
         self.update_gui(self.screen)
 
@@ -116,6 +119,7 @@ class ServerGame:
         # self.broadcast()          # Final broadcast for this game before result
 
         self.infoFlag = 10        # Result 10
+        print "One game completed"
         self.result()
         self.broadcast()          # Final broadcast, broadcast result
 
@@ -144,7 +148,7 @@ class ServerGame:
         self.winner = self.numberOfPlayers-1      # Server is the winner
         self.players[self.winner].money += self.pot
         self.pot = 0
-        #self.broadcast()
+        # self.broadcast()
 
     #GUI should be updated at the time broadcast
     # def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
@@ -167,19 +171,27 @@ class ServerGame:
     ############################
 
     def update_gui(self, screen):
-        state = 0
-        if self.serverTurn == self.turn:
 
-            butChk = mygui.Button()
-            butChk.create_button_image(screen, but5, 198, 405, 120, 30, "Check", 16, WHITE)
-            butFold = mygui.Button()
-            butFold.create_button_image(screen, but5, 322, 405, 120, 30, "Fold", 16, WHITE)
-            butRaise = mygui.Button()
-            butRaise.create_button_image(screen, but5, 198, 439, 120, 30, "Raise", 16, WHITE)
-            butAllIn = mygui.Button()
-            butAllIn.create_button_image(screen, but5, 322, 439, 120, 30, "All-in", 16, WHITE)
+        state = 0
+        testPot = mygui.Button()
+
+        butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
+        butStr = ["Check", "Fold", "Raise", "All-in"]
+        butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30),]
+
+        self.toCallAmount = (self.currentRoundBet-self.players[self.serverTurn].currentRoundBet)
+        if self.serverTurn == self.turn:
+            #Create all buttons
+            for o in range(4):
+                if o==0 and self.toCallAmount != 0:
+                    strCall = "Call $"+ str(self.toCallAmount)
+                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                else:
+                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
             pygame.display.update()
+
+            butHover = [False, False, False, False]
 
             quit = False
             while not quit:
@@ -188,19 +200,45 @@ class ServerGame:
                         pygame.quit()
                         sys.exit()
 
+                    #Mouse Hover handling
+                    MOUSEPOS = pygame.mouse.get_pos()
+                    for o in range(4):
+                        if butList[o].hover(MOUSEPOS):
+                            if not butHover[o]:
+                                screen.blit(BG1,(butXY[o][0],butXY[o][1]),butXY[o])
+                                if o==0 and self.toCallAmount != 0:
+                                    strCall = "Call $"+ str(self.toCallAmount)
+                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                                else:
+                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+
+                                pygame.display.update()
+                                butHover[o] = True
+                        else:
+                            if butHover[o]:
+                                if o==0 and self.toCallAmount != 0:
+                                    strCall = "Call $"+ str(self.toCallAmount)
+                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                                else:
+                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+
+                                pygame.display.update()
+                                butHover[o] = False
+
+                    #Mouse click handling
                     isSend = False
                     if event.type == MOUSEBUTTONDOWN:
-                        if butChk.pressed(pygame.mouse.get_pos()):
-                            state = 0
+                        if butList[0].pressed(pygame.mouse.get_pos()):
+                            state = self.toCallAmount
                             isSend = True
-                        elif butFold.pressed(pygame.mouse.get_pos()):
+                        elif butList[1].pressed(pygame.mouse.get_pos()):
                             state = -1
                             isSend = True
-                        elif butRaise.pressed(pygame.mouse.get_pos()):
-                            state = 100 #Change it later
+                        elif butList[2].pressed(pygame.mouse.get_pos()):
+                            state = max(self.toCallAmount,10)*2 #Change it later
                             isSend = True
-                        elif butAllIn.pressed(pygame.mouse.get_pos()):
-                            state = self.MONEY[self.myTurn]
+                        elif butList[3].pressed(pygame.mouse.get_pos()):
+                            state = self.players[str(self.myTurn)].money
                             isSend = True
 
                     if isSend == True:
@@ -211,18 +249,13 @@ class ServerGame:
 
 
         else:
-             screen.blit(BG1,(198,405),(198,405,244,64))
+            screen.blit(BG1,(198,405),(198,405,244,64))
 
-             butChk = mygui.Button()
-             butChk.create_button_image(screen, but4, 198, 405, 120, 30, "Check", 16, WHITE)
-             butFold = mygui.Button()
-             butFold.create_button_image(screen, but4, 322, 405, 120, 30, "Fold", 16, WHITE)
-             butRaise = mygui.Button()
-             butRaise.create_button_image(screen, but4, 198, 439, 120, 30, "Raise", 16, WHITE)
-             butAllIn = mygui.Button()
-             butAllIn.create_button_image(screen, but4, 322, 439, 120, 30, "All-in", 16, WHITE)
+            #Create all buttons
+            for o in range(4):
+                butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
-             pygame.display.update()
+            pygame.display.update()
 
         exTurn = self.turn
         tempTurn = (self.turn + 1)%self.numberOfPlayers
@@ -233,11 +266,19 @@ class ServerGame:
         # self.recv(clientSocket)
         self.update_MONEY()
 
+        #Display pot (change to include animation)
+        testPot = mygui.Button()
+        string = "$"+str(self.pot)
+        screen.blit(PKT1, (int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80), (int(TBLWIDTH/2 - 7.5*len(string)),2*TBLHEIGHT/3-10,15*len(string), 20))
+        testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80 , 15*len(string), 20, string, 12, WHITE)
+
+
         self.draw_boy(screen, tempTurn, self.serverTurn, tempTurn)
         self.draw_boy_box(screen, self.turn)
 
         self.draw_boy(screen, exTurn, self.serverTurn, tempTurn)
         self.draw_boy_box(screen, exTurn)
+
 
         pygame.display.update()
         return state

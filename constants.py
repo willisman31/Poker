@@ -47,6 +47,9 @@ but4.fill((255, 255, 255, alpha), None, pygame.BLEND_RGBA_MULT)
 but5 = pygame.image.load("images/but6.png")
 but5 = pygame.transform.scale(but5, (120,30))
 
+but6 = pygame.image.load("images/but7.png")
+but6 = pygame.transform.scale(but6, (120,30))
+
 
 
 

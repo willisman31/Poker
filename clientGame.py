@@ -9,7 +9,7 @@ class ClientGame:
 
         print "Inside ClientGame : init method"
 
-        #self.test(screen)
+        # self.test(screen)
         self.recv(clientSocket)
         self.main(clientSocket, screen)
 
@@ -36,6 +36,9 @@ class ClientGame:
         self.toCallAmount = int(self.things[3])
         self.winner = int(self.things[4])
         self.infoFlag = int(self.things[5])
+
+        if self.infoFlag == 10:
+            print "Eureka!!!!"
 
         jsonPlayers = json.loads(jsonPlayers)
         self.players = {0:[]}
@@ -96,16 +99,33 @@ class ClientGame:
             self.BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
             self.BOYTXTBOX.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
 
+    def pot_animation(self, screen, num):
+        tempList = []
+        for i in range(20,0,-1):
+            tempList.append(num/i)
+
+        testPot = mygui.Button()
+        for i in tempList:
+            string = "$"+str(i)
+            screen.blit(PKT1, (int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80), (int(TBLWIDTH/2 - 7.5*len(string)),2*TBLHEIGHT/3-10,15*len(string), 20))
+            testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80 , 15*len(string), 20, string, 12, WHITE)
+            pygame.display.update()
+            time.sleep(0.02)
+
+
 
     def main(self, clientSocket, screen):
 
         self.turnMap = self.order_players(self.myTurn, self.numberOfPlayers)
         self.init_box_coord()
 
+
         self.init_gui(screen)
 
-        butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
-        butStr = ["Check", "Fold", "Raise", "All-in", "Call"]
+        testPot = mygui.Button()
+
+        butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
+        butStr = ["Check", "Fold", "Raise", "All-in"]
         butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30),]
 
         while 1:
@@ -113,7 +133,11 @@ class ClientGame:
 
                 #Create all buttons
                 for o in range(4):
-                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+                    if o==0 and self.toCallAmount != 0:
+                        strCall = "Call $"+ str(self.toCallAmount)
+                        butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                    else:
+                        butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
                 pygame.display.update()
 
@@ -132,12 +156,22 @@ class ClientGame:
                             if butList[o].hover(MOUSEPOS):
                                 if not butHover[o]:
                                     screen.blit(BG1,(butXY[o][0],butXY[o][1]),butXY[o])
-                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+                                    if o==0 and self.toCallAmount != 0:
+                                        strCall = "Call $"+ str(self.toCallAmount)
+                                        butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                                    else:
+                                        butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+
                                     pygame.display.update()
                                     butHover[o] = True
                             else:
                                 if butHover[o]:
-                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+                                    if o==0 and self.toCallAmount != 0:
+                                        strCall = "Call $"+ str(self.toCallAmount)
+                                        butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
+                                    else:
+                                        butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+
                                     pygame.display.update()
                                     butHover[o] = False
 
@@ -145,16 +179,16 @@ class ClientGame:
                         isSend = False
                         if event.type == MOUSEBUTTONDOWN:
                             if butList[0].pressed(pygame.mouse.get_pos()):
-                                state = 0
+                                state = self.toCallAmount
                                 isSend = True
                             elif butList[1].pressed(pygame.mouse.get_pos()):
                                 state = -1
                                 isSend = True
                             elif butList[2].pressed(pygame.mouse.get_pos()):
-                                state = (self.toCallAmount)*2 #Change it later
+                                state = max(self.toCallAmount,10)*2 #Change it later
                                 isSend = True
                             elif butList[3].pressed(pygame.mouse.get_pos()):
-                                state = self.MONEY[self.myTurn]
+                                state = self.players[str(self.myTurn)].money
                                 isSend = True
 
                         if isSend == True:
@@ -177,13 +211,20 @@ class ClientGame:
             self.recv(clientSocket)
             self.update_game()
 
+            #Display pot (change to include animation)
+            if self.pot>0:
+                testPot = mygui.Button()
+                string = "$"+str(self.pot)
+                screen.blit(PKT1, (int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80), (int(TBLWIDTH/2 - 7.5*len(string)),2*TBLHEIGHT/3-10,15*len(string), 20))
+                testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80 , 15*len(string), 20, string, 12, WHITE)
+
             self.draw_boy(screen, self.turn, self.myTurn, self.turn)
             self.draw_boy_box(screen, self.turn)
 
             self.draw_boy(screen, exTurn, self.myTurn, self.turn)
             self.draw_boy_box(screen, exTurn)
 
-
+            self.end_hand()
             pygame.display.update()
 
 
@@ -194,6 +235,13 @@ class ClientGame:
         self.MONEY = []
         for o in self.players:
             self.MONEY.append("$"+str(self.players[str(o)].money))
+
+    def end_hand(self):
+        if self.infoFlag != 10:
+            return
+        #Do something here
+        print "Hand completed!!"
+        print "Winner is : " + str(self.winner)
 
 
 
@@ -242,12 +290,16 @@ class ClientGame:
         self.numberOfPlayers = 8
 
         self.toCallAmount = 20
+        self.pot = 100
 
         self.NAMES = []
         self.MONEY = []
         for i in range(self.numberOfPlayers):
             self.NAMES.append(self.players[str(i)].name)
             self.MONEY.append("$"+str(self.players[str(i)].money))
+
+
+
 
 
 if __name__ == '__main__':
