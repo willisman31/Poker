@@ -2,6 +2,7 @@ from constants import *
 
 class Player():
     def __init__(self,turn,name="John"):
+        self.isActive = True
         self.turn = turn
         self.name = name
         self.reset()
@@ -14,6 +15,8 @@ class Player():
         self.currentRoundBet = 0
 
     def bet(self,amount):
+        if amount > self.money:
+            amount = self.money
         self.money -= amount
         self.pot += amount
         self.currentRoundBet += amount
@@ -22,7 +25,7 @@ class Player():
         self.fold = True
 
     def display(self):
-        print self.name,self.money,self.pot,self.fold
+        print self.turn,self.name,self.money,self.pot,self.fold
 
 if __name__ == '__main__':
     obj = Player(0)
