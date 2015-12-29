@@ -49,6 +49,7 @@ class ClientGame:
             obj.pot = jsonPlayers[key]['pot']
             obj.money = jsonPlayers[key]['money']
             obj.currentRoundBet = jsonPlayers[key]['currentRoundBet']
+            obj.isActive = jsonPlayers[key]['isActive']
 
             self.players[key] = obj
 
@@ -151,7 +152,7 @@ class ClientGame:
 
         butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
         butStr = ["Check", "Fold", "Raise", "All-in"]
-        butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30),]
+        butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30)]
         cardDrawn = [False,False,False,False]
 
         while 1:
@@ -235,7 +236,7 @@ class ClientGame:
 
             exTurn = self.turn
             exPot = self.pot
-            exPot=0
+
             self.recv(clientSocket)
             self.update_game()
 
@@ -260,7 +261,7 @@ class ClientGame:
                     cardDrawn[0] = True
 
             if self.infoFlag == 1:
-                if not cardDrawn[1]:
+                # if not cardDrawn[1]:
                     tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 140+20, 200 )
                     tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,210+20 ,200  )
                     tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,280 +20,200  )
@@ -270,17 +271,17 @@ class ClientGame:
                     cardDrawn[1] = True
 
             elif self.infoFlag == 2:
-                if not cardDrawn[2]:
+                # if not cardDrawn[2]:
                     tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,350 +20,200  )
                     screen.blit(tblCard4, tblCard4Rect4)
                     cardDrawn[2] = True
             elif self.infoFlag == 3:
-                if not cardDrawn[3]:
+                # if not cardDrawn[3]:
                     tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,420 +20,200  )
                     screen.blit(tblCard5, tblCard5Rect5)
                     cardDrawn[3] = True
             elif self.infoFlag == 10:
-                self.end_hand()
+                self.end_hand(screen, clientSocket)
                 for i in cardDrawn:
                     cardDrawn[i] = False
 
@@ -293,7 +294,7 @@ class ClientGame:
         for o in self.players:
             self.MONEY.append("$"+str(self.players[str(o)].money))
 
-    def end_hand(self):
+    def end_hand(self,screen, clientSocket):
         if self.infoFlag != 10:
             return
         #Do something here
@@ -325,6 +326,15 @@ class ClientGame:
 
         #Clear winBox
         self.draw_boy_box(screen, self.winner)
+
+        self.recv(clientSocket)
+
+        txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
+        txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
+        screen.blit(txtCard1, txtCard1Rect1)
+        screen.blit(txtCard2, txtCard2Rect2)
+
+
 
     def order_players(self, myturn, numberOfPlayers):
         order = {0:[]}
