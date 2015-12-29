@@ -290,7 +290,7 @@ class ClientGame:
 
     def update_game(self):
         self.MONEY = []
-        for o in self.players:
+        for o in range(self.numberOfPlayers):
             self.MONEY.append("$"+str(self.players[str(o)].money))
 
     def end_hand(self,screen, clientSocket):
