@@ -38,10 +38,8 @@ class ClientGame:
         self.infoFlag = int(self.things[5])
         self.winCards = self.things[6]
 
-        if self.infoFlag == 10:
-            print "Eureka!!!!"
-
         jsonPlayers = json.loads(jsonPlayers)
+        print jsonPlayers
         self.players = {0:[]}
         for key in jsonPlayers:
             obj = player.Player(jsonPlayers[key]['turn'], jsonPlayers[key]['name'])
@@ -55,10 +53,9 @@ class ClientGame:
 
         self.NAMES = []
         self.MONEY = []
-        for o in self.players:
+        for o in range(self.numberOfPlayers):
             self.NAMES.append(self.players[str(o)].name)
             self.MONEY.append("$"+str(self.players[str(o)].money))
-
 
     def init_gui(self, screen):
 
@@ -98,7 +95,6 @@ class ClientGame:
         pass
 
     def draw_boy(self, screen, id, myTurn, turn):
-
         if id == myTurn and id == turn :
             screen.blit(boy2, BOYS[self.turnMap[id]])
         elif id == myTurn and id != turn :
@@ -108,9 +104,10 @@ class ClientGame:
         else :
             screen.blit(boy1, BOYS[self.turnMap[id]])
 
+
     def draw_boy_box(self, screen, i):
         screen.blit(but1, self.BOYBUT[self.turnMap[i]])
-
+        print self.NAMES[i],",",self.MONEY[i]
         textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(self.MONEY[i]), WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2] )
         textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, self.NAMES[i], WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][1] )
         screen.blit(textMoney, textMoneyRect)
@@ -143,6 +140,8 @@ class ClientGame:
     def main(self, clientSocket, screen):
 
         self.turnMap = self.order_players(self.myTurn, self.numberOfPlayers)
+        print self.turnMap
+
         self.init_box_coord()
 
 
