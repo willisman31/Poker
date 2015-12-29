@@ -6,6 +6,7 @@ HEIGHT = 480
 CAPTION = "Poker"
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 128)
 
@@ -49,6 +50,8 @@ but5 = pygame.transform.scale(but5, (120,30))
 
 but6 = pygame.image.load("images/but7.png")
 but6 = pygame.transform.scale(but6, (120,30))
+but7 = pygame.image.load("images/but3.png")
+but7 = pygame.transform.scale(but7, (90,30))
 
 
 
