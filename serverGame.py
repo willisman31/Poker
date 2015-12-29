@@ -265,6 +265,10 @@ class ServerGame:
         self.draw_boy(screen, exTurn, self.myTurn, self.turn)
         self.draw_boy_box(screen, exTurn)
 
+        for i in range(self.numberOfPlayers):
+            self.draw_boy_bet(screen, i)
+
+
         if self.infoFlag == 0:
             #Draw init cards
             if not cardDrawn[0]:
@@ -276,9 +280,9 @@ class ServerGame:
 
         if self.infoFlag == 1:
             if not cardDrawn[1]:
-                tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 140+20, 200 )
-                tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,210+20 ,200  )
-                tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,280 +20,200  )
+                tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 220, 200 )
+                tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,260 ,200  )
+                tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,300,200  )
                 screen.blit(tblCard1, tblCard1Rect1)
                 screen.blit(tblCard2, tblCard2Rect2)
                 screen.blit(tblCard3, tblCard3Rect3)
@@ -286,12 +290,12 @@ class ServerGame:
 
         elif self.infoFlag == 2:
             if not cardDrawn[2]:
-                tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,350 +20,200  )
+                tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,340,200  )
                 screen.blit(tblCard4, tblCard4Rect4)
                 cardDrawn[2] = True
         elif self.infoFlag == 3:
             if not cardDrawn[3]:
-                tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,420 +20,200  )
+                tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,380,200  )
                 screen.blit(tblCard5, tblCard5Rect5)
                 cardDrawn[3] = True
         elif self.infoFlag == 10:
@@ -484,11 +488,9 @@ class ServerGame:
         # self.recv(clientSocket)
         self.update_MONEY()
 
-        #Display pot (change to include animation)
-        testPot = mygui.Button()
-        string = "$"+str(self.pot)
-        screen.blit(PKT1, (int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80), (int(TBLWIDTH/2 - 7.5*len(string)),2*TBLHEIGHT/3-10,15*len(string), 20))
-        testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80 , 15*len(string), 20, string, 12, WHITE)
+        #Display pot
+        if self.pot>0 and self.pot-exPot>0:
+            self.pot_animation(screen, self.pot)
 
 
         self.draw_boy(screen, tempTurn, self.serverTurn, tempTurn)
@@ -496,6 +498,9 @@ class ServerGame:
 
         self.draw_boy(screen, exTurn, self.serverTurn, tempTurn)
         self.draw_boy_box(screen, exTurn)
+
+        for i in range(self.numberOfPlayers):
+            self.draw_boy_bet(screen, i)
 
 
         pygame.display.update()
@@ -514,6 +519,11 @@ class ServerGame:
         #Putting textbuttons
         for i in range(self.numberOfPlayers):
             self.draw_boy_box(screen, i)
+
+        #Putting boyBet
+        for i in range(self.numberOfPlayers):
+            self.draw_boy_bet(screen, i)
+
 
         #Draw init cards
         txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
@@ -544,27 +554,37 @@ class ServerGame:
         screen.blit(textMoney, textMoneyRect)
         screen.blit(textName, textNameRect)
 
+    def draw_boy_bet(self, screen, i):
+        obj = mygui.Button()
+        screen.blit(PKT1,(self.BUTROUNDBET[self.turnMap[i]][0], self.BUTROUNDBET[self.turnMap[i]][1]),(self.BUTROUNDBET[self.turnMap[i]][0]-80, self.BUTROUNDBET[self.turnMap[i]][1]-80,20+6*11,20))
+        if self.ROUNDBET[i]!="$0":
+            obj.create_button_image(screen, but8, self.BUTROUNDBET[self.turnMap[i]][0], self.BUTROUNDBET[self.turnMap[i]][1] , 20+6*len(self.ROUNDBET[i]), 15, self.ROUNDBET[i], 12, WHITE)
+
+
     def init_box_coord(self):
         #List of coordinates for the button and textboxes below player picture
         self.BOYBUT = []
         self.BOYTXTBOX = [] # Tuple of 3 coordinates. Two different y coordinates and one same x coordinate for the text (x, y1, y2)
+        self.BUTROUNDBET = [(115,150),(175,120),(275,120),(375,120),(445,150),(455,200),(425,235),(175,265),(275,265),(375,265),(135,235),(105,200)]
         for i in range(12):
             self.BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
             self.BOYTXTBOX.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
+
 
     def pot_animation(self, screen, num):
         tempList = []
         for i in range(20,0,-1):
             tempList.append(num/i)
 
-        screen.blit(PKT1, (130,int(2*TBLHEIGHT/3+70)),(50,int(2*TBLHEIGHT/3)-10,TBLWIDTH-100,30) )
+        screen.blit(PKT1, (250,int(2*TBLHEIGHT/3+80)),(170,int(2*TBLHEIGHT/3),120,20) )
         testPot = mygui.Button()
         for i in tempList:
             string = "$"+str(i)
-            screen.blit(PKT1, (int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80), (int(TBLWIDTH/2 - 7.5*len(string)),2*TBLHEIGHT/3-10,15*len(string), 20))
-            testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - 7.5*len(string)+80), 2*TBLHEIGHT/3-10+80 , 15*len(string), 20, string, 12, WHITE)
+            screen.blit(PKT1, (int(TBLWIDTH/2 - (10+3.5*len(string))+80), 2*TBLHEIGHT/3+80), (int(TBLWIDTH/2 - (10+3.5*len(string))),2*TBLHEIGHT/3,20+7*len(string), 20))
+            testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - (10+3.5*len(string)))+80, 2*TBLHEIGHT/3+80 , 20 + 7*len(string), 20, string, 13, WHITE)
             pygame.display.update()
             time.sleep(0.02)
+
 
 
 
@@ -575,9 +595,11 @@ class ServerGame:
 
         self.NAMES = []
         self.MONEY = []
+        self.ROUNDBET=[]
         for i in range(self.numberOfPlayers):
             self.NAMES.append(self.players[i].name)
             self.MONEY.append("$"+str(self.players[i].money))
+            self.ROUNDBET.append("$"+str(self.players[i].currentRoundBet))
 
         self.init_gui(screen)
 
@@ -593,8 +615,10 @@ class ServerGame:
 
     def update_MONEY(self):
         self.MONEY = []
+        self.ROUNDBET = []
         for i in range(self.numberOfPlayers):
             self.MONEY.append("$"+str(self.players[i].money))
+            self.ROUNDBET.append("$"+str(self.players[i].currentRoundBet))
 
 
     def order_players(self, myturn, numberOfPlayers):
@@ -648,7 +672,7 @@ class ServerGame:
         #
         # #Clear winhand
         # self.screen.blit(BG1, (0,400), (0,400,150,40))
-        # 
+        #
         # #Clear winBox
         # self.draw_boy_box(self.screen, self.handWinner)
         #

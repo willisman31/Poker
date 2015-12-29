@@ -38,7 +38,7 @@ but1 = pygame.transform.scale(but1, (90,30))
 but2 = pygame.image.load("images/but0.png")
 but2 = pygame.transform.scale(but2, (120,30))
 but3 = pygame.image.load("images/but4.png")
-but3 = pygame.transform.scale(but3, (120,30))
+but3 = pygame.transform.scale(but3, (200,50))
 
 alpha = 180
 but4 = pygame.image.load("images/but6.png")
@@ -52,7 +52,8 @@ but6 = pygame.image.load("images/but7.png")
 but6 = pygame.transform.scale(but6, (120,30))
 but7 = pygame.image.load("images/but3.png")
 but7 = pygame.transform.scale(but7, (90,30))
-
+but8 = pygame.image.load("images/but8.png")
+but8 = pygame.transform.scale(but8, (90,30))
 
 
 
