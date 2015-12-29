@@ -124,6 +124,8 @@ class ServerGame:
             self.players[i].pot = 0
             self.players[i].fold = False
 
+        self.initGuiFlag = False
+
 
     def start_hand(self):
         self.init_hand()
@@ -257,11 +259,6 @@ class ServerGame:
 
         self.update_MONEY()
 
-        #Display pot
-        if self.pot>0 and self.pot-exPot>0:
-            self.pot_animation(screen, self.pot)
-
-
         self.draw_boy(screen, self.turn, self.myTurn, self.turn)
         self.draw_boy_box(screen, self.turn)
 
@@ -301,6 +298,11 @@ class ServerGame:
             self.end_hand()
             for i in cardDrawn:
                 cardDrawn[i] = False
+
+        #Display pot
+        if self.pot>0 and self.pot-exPot>0:
+            self.pot_animation(screen, self.pot)
+
 
         pygame.display.update()
 
@@ -363,7 +365,7 @@ class ServerGame:
                         state = max(self.toCallAmount,10)*2 #Change it later
                         isSend = True
                     elif butList[3].pressed(pygame.mouse.get_pos()):
-                        state = self.players[str(self.myTurn)].money
+                        state = self.players[self.myTurn].money
                         isSend = True
 
                 if isSend == True:
@@ -640,16 +642,16 @@ class ServerGame:
 
         time.sleep(3)
 
-        #Clear table (TableCards + Pot)
-        self.screen.blit(PKT1,(80+50,180),(50,100,TBLWIDTH-100,70))
-        self.screen.blit(PKT1,(260,130),(180,50,140,40))
-
-        #Clear winhand
-        self.screen.blit(BG1, (0,400), (0,400,150,40))
-
-        #Clear winBox
-        self.draw_boy_box(self.screen, self.handWinner)
-
+        # #Clear table (TableCards + Pot)
+        # self.screen.blit(PKT1,(80+50,180),(50,100,TBLWIDTH-100,70))
+        # self.screen.blit(PKT1,(260,130),(180,50,140,40))
+        #
+        # #Clear winhand
+        # self.screen.blit(BG1, (0,400), (0,400,150,40))
+        # 
+        # #Clear winBox
+        # self.draw_boy_box(self.screen, self.handWinner)
+        #
 
 
 

@@ -240,10 +240,6 @@ class ClientGame:
             self.recv(clientSocket)
             self.update_game()
 
-            #Display pot
-            if self.pot>0 and self.pot-exPot>0:
-                self.pot_animation(screen, self.pot)
-
 
             self.draw_boy(screen, self.turn, self.myTurn, self.turn)
             self.draw_boy_box(screen, self.turn)
@@ -285,6 +281,10 @@ class ClientGame:
                 for i in cardDrawn:
                     cardDrawn[i] = False
 
+            #Display pot
+            if self.pot>0 and self.pot-exPot>0:
+                self.pot_animation(screen, self.pot)
+
             pygame.display.update()
 
 
@@ -317,22 +317,22 @@ class ClientGame:
 
         time.sleep(3)
 
-        #Clear table (TableCards + Pot)
-        screen.blit(PKT1,(80+50,180),(50,100,TBLWIDTH-100,70))
-        screen.blit(PKT1,(260,130),(180,50,140,40))
-
-        #Clear winhand
-        screen.blit(BG1, (0,400), (0,400,150,40))
-
-        #Clear winBox
-        self.draw_boy_box(screen, self.winner)
+        # #Clear table (TableCards + Pot)
+        # screen.blit(PKT1,(250,130),(170,50,150,40))
+        # screen.blit(PKT1,(80+50,180),(50,100,TBLWIDTH-100,70))
+        #
+        # #Clear my cards
+        # screen.blit(BG1, (0,400), (0,400,150,40))
+        #
+        # #Clear winBox
+        # self.draw_boy_box(screen, self.winner)
 
         self.recv(clientSocket)
-
-        txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
-        txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
-        screen.blit(txtCard1, txtCard1Rect1)
-        screen.blit(txtCard2, txtCard2Rect2)
+        self.init_gui(screen)
+        # txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
+        # txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
+        # screen.blit(txtCard1, txtCard1Rect1)
+        # screen.blit(txtCard2, txtCard2Rect2)
 
 
 
