@@ -16,16 +16,23 @@ class ServerGame:
             self.players[self.turn].do_fold()
             #self.players[self.turn].pot = 0
         else:
-            self.players[self.turn].bet(receivedBetValue)
-            self.roundPot += receivedBetValue
+
+            amount = self.players[self.turn].bet(receivedBetValue)
+            self.roundPot += amount
             if self.players[self.turn].currentRoundBet > self.currentRoundBet:
                  self.currentRoundBet = self.players[self.turn].currentRoundBet
                  self.lastRaisedPlayer = self.turn
 
+        # self.maxPlayerMoney = 0
+        # for i in range(self.numberOfPlayers):
+        #     self.maxPlayerMoney = max(self.maxPlayerMoney,self.players[i].money + self.players[i].currentRoundBet)
+
 
     def init_round(self):
+        # self.maxPlayerMoney = 0
         for i in range(self.numberOfPlayers):
             self.players[i].currentRoundBet = 0
+            # self.maxPlayerMoney = max(self.maxPlayerMoney,self.players[i].money + self.players[i].currentRoundBet)
 
         if self.infoFlag == 0:
             self.currentRoundBet = self.bigBlind
@@ -69,6 +76,7 @@ class ServerGame:
 
         while True:
             self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
+            self.serverMaxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
             self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
 
             if (not self.players[self.turn].fold) and self.players[self.turn].money != 0 and self.players[self.turn].isActive:
@@ -153,14 +161,16 @@ class ServerGame:
 
 
     def fin_hand(self):
+
+        # Hand result
+        self.hand_result()
+
         # Decrese numberOfActivePlayers and remove from activePlayers
         for i in self.activePlayers:
             if self.players[i].money == 0:
                 self.players[i].isActive = False
                 self.numberOfActivePlayers -= 1
                 self.activePlayers.remove(i)
-        # Hand result
-        self.hand_result()
         # increment start
         self.start = (self.start + 1)%self.numberOfPlayers
         while self.players[self.start].isActive == False:
@@ -207,12 +217,20 @@ class ServerGame:
     def broadcast(self):   # infoFlag, client's cards, myTurn, players, tablecards, turn, numberOfPlayers, pot, toCallAmount
         i=0
         for cSock in self.clientSockets:
+            maxPlayerMoney = 0
+            for j in self.activePlayers:
+                if not self.players[j].fold and j != i:
+                    maxPlayerMoney = max(maxPlayerMoney,self.players[j].money + self.players[j].currentRoundBet)
+
+
+            maxBet = min(maxPlayerMoney - self.players[i].currentRoundBet, self.players[i].money)
+
             msgPlayerCards = json.dumps(self.cards[cSock])
             msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
             msgTableCards = json.dumps(self.tableCards)
 
             toCallAmount = self.currentRoundBet - self.players[i].currentRoundBet
-            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.handWinner, self.infoFlag, self.winCards)
+            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.handWinner, self.infoFlag, self.winCards, maxBet)
             msgThings = json.dumps(things)
 
             completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings
@@ -312,6 +330,12 @@ class ServerGame:
 
 
     def server_move(self,screen,butList,butStr,butXY,cardDrawn):
+        maxPlayerMoney = 0
+        for j in self.activePlayers:
+            if not self.players[j].fold and j != self.serverTurn:
+                maxPlayerMoney = max(maxPlayerMoney,self.players[j].money + self.players[j].currentRoundBet)
+        self.maxBet = min(maxPlayerMoney - self.players[self.serverTurn].currentRoundBet, self.players[self.serverTurn].money)
+
         #Create all buttons
         for o in range(4):
             if o==0 and self.toCallAmount != 0:
