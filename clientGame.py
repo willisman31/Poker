@@ -37,6 +37,7 @@ class ClientGame:
         self.winner = int(self.things[4])
         self.infoFlag = int(self.things[5])
         self.winCards = self.things[6]
+        self.maxBet = self.things[7]
 
         jsonPlayers = json.loads(jsonPlayers)
         self.players = {0:[]}
@@ -167,7 +168,7 @@ class ClientGame:
         testPot = mygui.Button()
 
         butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
-        butStr = ["Check", "Fold", "Raise", "All-in"]
+        butStr = ["Check", "Fold", "All-in", "Raise"]
         butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30)]
         cardDrawn = [False,False,False,False]
 
@@ -186,12 +187,20 @@ class ClientGame:
 
                 butHover = [False, False, False, False]
 
+                #Create raise slider
+                obj = mygui.Slider(screen,(450,450),(self.toCallAmount,self.maxBet))
+
                 quit = False
                 while not quit:
                     for event in pygame.event.get():
                         if event.type == QUIT:
                             pygame.quit()
                             sys.exit()
+
+                        #Slider event handle
+                        obj.event_slider(event, pygame.mouse.get_pos())
+                        #Updating the slider values
+                        obj.slider_update(screen)
 
                         #Mouse Hover handling
                         MOUSEPOS = pygame.mouse.get_pos()
@@ -228,10 +237,11 @@ class ClientGame:
                                 state = -1
                                 isSend = True
                             elif butList[2].pressed(pygame.mouse.get_pos()):
-                                state = max(self.toCallAmount,10)*2 #Change it later
+                                state = self.maxBet
                                 isSend = True
                             elif butList[3].pressed(pygame.mouse.get_pos()):
-                                state = self.players[str(self.myTurn)].money
+                                state = obj.getValue()
+                                # print "Raised : ",type(state),state
                                 isSend = True
 
                         if isSend == True:
@@ -241,12 +251,17 @@ class ClientGame:
                             break
 
 
+
+
             else:
                 screen.blit(BG1,(198,405),(198,405,244,64))
 
                 #Create all buttons
                 for o in range(4):
                     butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
+
+                #Remove slider
+                obj.slider_remove(screen)
 
                 pygame.display.update()
 

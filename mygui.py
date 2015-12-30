@@ -38,11 +38,12 @@ class Button:
         surface.blit(myText, ((x+length/2) - myText.get_width()/2, (y+height/2) - myText.get_height()/2))
         return surface
 
-    def create_button_image(self, surface, image, x, y, length, height, text, text_size, text_color, text_font = "freesansbold.ttf"):
+    def create_button_image(self, surface, image, x, y, length, height, text="", text_size=0, text_color=None, text_font = "freesansbold.ttf"):
 
         image = pygame.transform.scale(image, (length,height))
         surface.blit(image, (x, y))
-        surface = self.write_text_image(surface, text, text_color, text_size, text_font, length, height, x, y)
+        if text !="":
+            surface = self.write_text_image(surface, text, text_color, text_size, text_font, length, height, x, y)
         self.rect = pygame.Rect(x,y, length, height)
         self.text = text
         return surface
@@ -76,12 +77,9 @@ class Button:
             if mouse[1] > self.rect.topleft[1]:
                 if mouse[0] < self.rect.bottomright[0]:
                     if mouse[1] < self.rect.bottomright[1]:
-                        print  self.text + " button was pressed!"
+                        # print  self.text + " button was pressed!"
                         return True
-                    else: return False
-                else: return False
-            else: return False
-        else: return False
+        return False
 
     def hover(self, mouse):
         return self.rect.collidepoint(mouse)
@@ -175,3 +173,73 @@ class TextBox(object):
             curse = self.render_area.copy()
             curse.topleft = self.render_rect.topleft
             surface.fill(self.font_color,(curse.right+1,curse.y,2,curse.h))
+
+
+class Slider():
+    def __init__(self,screen, (posX,posY),(minVal,maxVal)):
+        self.surRect = Rect(0,0,0,0)
+
+        self.minVal = minVal
+        self.maxVal = maxVal
+        self.SLIDERX = posX
+        self.SLIDERY = posY
+        self.SLIDERLEN = 170
+        self.SLIDERWID = 4
+        self.SLIDERBUTLEN = 39
+        self.SLIDERBUTWID = 20
+        self.imgX=self.SLIDERX
+        self.imgY=self.SLIDERY
+        self.exImgX=self.imgX
+        self.value = self.minVal
+        self.rect = pygame.Rect(posX,posY-((self.SLIDERBUTWID-self.SLIDERWID)/2), self.SLIDERLEN,self.SLIDERBUTWID )
+
+        self.s = mygui.Button()
+        self.s1 = mygui.Button()
+        self.s.create_button_image(screen, sl1, self.imgX,self.imgY,self.SLIDERLEN,self.SLIDERWID)
+        self.s1.create_button_image(screen, sl2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
+        pygame.display.update()
+
+    def slider_remove(self, screen):
+        screen.blit(BG1,(self.surRect.topleft),self.surRect)
+        screen.blit(BG1,(self.exImgX,self.SLIDERY-((self.SLIDERBUTWID-self.SLIDERWID)/2)),(self.exImgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERLEN,self.SLIDERBUTWID))
+        pygame.display.update()
+
+    def event_slider(self, event, mouse):
+        if event.type == MOUSEMOTION:
+            if ((event.buttons[0] and self.s1.pressed(pygame.mouse.get_pos())) or (self.s1.pressed(pygame.mouse.get_pos()))):
+                rel = event.rel
+                self.imgX += rel[0]
+                if self.imgX > (self.SLIDERX+self.SLIDERLEN-self.SLIDERBUTLEN): self.imgX = (self.SLIDERX+self.SLIDERLEN-self.SLIDERBUTLEN)
+                if self.imgX < self.SLIDERX: self.imgX = self.SLIDERX
+
+        if event.type == MOUSEBUTTONDOWN:
+            if self.pressed(mouse):
+                self.imgX = mouse[0] - self.SLIDERBUTLEN/2
+                if self.imgX > (self.SLIDERX+self.SLIDERLEN-self.SLIDERBUTLEN): self.imgX = (self.SLIDERX+self.SLIDERLEN-self.SLIDERBUTLEN)
+                if self.imgX < self.SLIDERX: self.imgX = self.SLIDERX
+
+
+    def slider_update(self, screen):
+        screen.blit(BG1,(self.exImgX,self.SLIDERY-((self.SLIDERBUTWID-self.SLIDERWID)/2)),(self.exImgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERLEN,self.SLIDERBUTWID))
+        self.s.create_button_image(screen, sl1, self.SLIDERX,self.SLIDERY,self.SLIDERLEN,self.SLIDERWID)
+        self.s1.create_button_image(screen, sl2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
+
+        exSurRect = self.surRect
+        screen.blit(BG1,(exSurRect.topleft),exSurRect)
+
+        self.value = int((float(self.imgX-self.SLIDERX)/(self.SLIDERLEN-self.SLIDERBUTLEN)) * (self.maxVal-self.minVal) + self.minVal)
+        sur,self.surRect = mygui.print_text('freesansbold.ttf', 13, str(self.value), WHITE, None, self.imgX+(self.SLIDERBUTLEN/2), self.imgY-15)
+        screen.blit(sur,self.surRect)
+        pygame.display.update()
+
+    def getValue(self):
+        return self.value
+
+    def pressed(self, mouse):
+        if mouse[0] > self.rect.topleft[0]:
+            if mouse[1] > self.rect.topleft[1]:
+                if mouse[0] < self.rect.bottomright[0]:
+                    if mouse[1] < self.rect.bottomright[1]:
+                        # print  self.text + " button was pressed!"
+                        return True
+        return False

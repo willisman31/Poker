@@ -55,6 +55,12 @@ but7 = pygame.transform.scale(but7, (90,30))
 but8 = pygame.image.load("images/but8.png")
 but8 = pygame.transform.scale(but8, (90,30))
 
+sl1 = pygame.image.load("images/slider0.png")
+sl1 = pygame.transform.scale(sl1, (200,4))
+sl2 = pygame.image.load("images/slider1.png")
+sl2 = pygame.transform.scale(sl2, (39,20))
+
+
 
 
 PICSIZE = (int(HEIGHT/4.8), int(HEIGHT/4.8)) # 100 * 100

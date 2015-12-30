@@ -76,7 +76,7 @@ class ServerGame:
 
         while True:
             self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
-            self.serverMaxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
+            # self.serverMaxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
             self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
 
             if (not self.players[self.turn].fold) and self.players[self.turn].money != 0 and self.players[self.turn].isActive:
@@ -104,8 +104,11 @@ class ServerGame:
     def fin_round(self):
         self.pot += self.roundPot
         self.roundPot = 0
-        for i in range(0, self.numberOfPlayers):
+        self.numberOfUnfoldedPlayers = 0
+        for i in range(self.numberOfPlayers):
             self.players[i].currentRoundBet = 0
+            if not self.players[i].fold and self.players[i].money != 0:
+                self.numberOfUnfoldedPlayers += 1
 
 
     def init_hand(self):
@@ -348,12 +351,21 @@ class ServerGame:
 
         butHover = [False, False, False, False]
 
+        #Create raise slider
+        self.obj = mygui.Slider(screen,(450,450),(self.toCallAmount,self.maxBet))
+
+
         quit = False
         while not quit:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
                     sys.exit()
+
+                #Slider event handle
+                self.obj.event_slider(event, pygame.mouse.get_pos())
+                #Updating the slider values
+                self.obj.slider_update(screen)
 
                 #Mouse Hover handling
                 MOUSEPOS = pygame.mouse.get_pos()
@@ -390,10 +402,10 @@ class ServerGame:
                         state = -1
                         isSend = True
                     elif butList[2].pressed(pygame.mouse.get_pos()):
-                        state = max(self.toCallAmount,10)*2 #Change it later
+                        state = self.maxBet
                         isSend = True
                     elif butList[3].pressed(pygame.mouse.get_pos()):
-                        state = self.players[self.myTurn].money
+                        state = self.obj.getValue()
                         isSend = True
 
                 if isSend == True:
@@ -411,124 +423,12 @@ class ServerGame:
         for o in range(4):
             butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
-        pygame.display.update()
-
-
-
-
-    def update_gui(self, screen):
-
-        state = 0
-        testPot = mygui.Button()
-
-        butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
-        butStr = ["Check", "Fold", "Raise", "All-in"]
-        butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30),]
-
-        self.toCallAmount = (self.currentRoundBet-self.players[self.serverTurn].currentRoundBet)
-        if self.serverTurn == self.turn:
-            #Create all buttons
-            for o in range(4):
-                if o==0 and self.toCallAmount != 0:
-                    strCall = "Call $"+ str(self.toCallAmount)
-                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-                else:
-                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-            pygame.display.update()
-
-            butHover = [False, False, False, False]
-
-            quit = False
-            while not quit:
-                for event in pygame.event.get():
-                    if event.type == QUIT:
-                        pygame.quit()
-                        sys.exit()
-
-                    #Mouse Hover handling
-                    MOUSEPOS = pygame.mouse.get_pos()
-                    for o in range(4):
-                        if butList[o].hover(MOUSEPOS):
-                            if not butHover[o]:
-                                screen.blit(BG1,(butXY[o][0],butXY[o][1]),butXY[o])
-                                if o==0 and self.toCallAmount != 0:
-                                    strCall = "Call $"+ str(self.toCallAmount)
-                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-                                else:
-                                    butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-                                pygame.display.update()
-                                butHover[o] = True
-                        else:
-                            if butHover[o]:
-                                if o==0 and self.toCallAmount != 0:
-                                    strCall = "Call $"+ str(self.toCallAmount)
-                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-                                else:
-                                    butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-                                pygame.display.update()
-                                butHover[o] = False
-
-                    #Mouse click handling
-                    isSend = False
-                    if event.type == MOUSEBUTTONDOWN:
-                        if butList[0].pressed(pygame.mouse.get_pos()):
-                            state = self.toCallAmount
-                            isSend = True
-                        elif butList[1].pressed(pygame.mouse.get_pos()):
-                            state = -1
-                            isSend = True
-                        elif butList[2].pressed(pygame.mouse.get_pos()):
-                            state = max(self.toCallAmount,10)*2 #Change it later
-                            isSend = True
-                        elif butList[3].pressed(pygame.mouse.get_pos()):
-                            state = self.players[str(self.myTurn)].money
-                            isSend = True
-
-                    if isSend == True:
-                        # clientSocket.send(str(state))
-                        isSend = False
-                        quit = True
-                        break
-
-
-        else:
-            screen.blit(BG1,(198,405),(198,405,244,64))
-
-            #Create all buttons
-            for o in range(4):
-                butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-            pygame.display.update()
-
-        exTurn = self.turn
-        tempTurn = (self.turn + 1)%self.numberOfPlayers
-        while 1:
-            if not self.players[tempTurn].fold and self.players[tempTurn].money != 0:
-                break
-            tempTurn = (tempTurn+1)%self.numberOfPlayers
-        # self.recv(clientSocket)
-        self.update_MONEY()
-
-        #Display pot
-        if self.pot>0 and self.pot-exPot>0:
-            self.pot_animation(screen, self.pot)
-
-
-        self.draw_boy(screen, tempTurn, self.serverTurn, tempTurn)
-        self.draw_boy_box(screen, self.turn)
-
-        self.draw_boy(screen, exTurn, self.serverTurn, tempTurn)
-        self.draw_boy_box(screen, exTurn)
-
-        for i in range(self.numberOfPlayers):
-            self.draw_boy_bet(screen, i)
+        #Remove slider
+        self.obj.slider_remove(screen)
 
 
         pygame.display.update()
-        return state
+
 
     def init_gui(self, screen):
 
@@ -557,6 +457,8 @@ class ServerGame:
 
         self.exTurn = self.turn
         self.exPot = 0
+        self.obj= mygui.Slider(screen,(450,450),(0,0))
+        self.obj.slider_remove(screen)
 
 
     def draw_boy(self, screen, id, myTurn, turn):
@@ -630,9 +532,11 @@ class ServerGame:
         self.testPot = mygui.Button()
 
         self.butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
-        self.butStr = ["Check", "Fold", "Raise", "All-in"]
+        self.butStr = ["Check", "Fold", "All-in", "Raise"]
         self.butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30)]
         self.cardDrawn = [False,False,False,False]
+
+
 # pygame.display.update()
         # time.sleep(60)
 

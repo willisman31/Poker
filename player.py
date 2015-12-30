@@ -20,6 +20,7 @@ class Player():
         self.money -= amount
         self.pot += amount
         self.currentRoundBet += amount
+        return amount
 
     def do_fold(self):
         self.fold = True
