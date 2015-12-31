@@ -3,6 +3,8 @@ from pygame.locals import *
 from constants import *
 from deck import *
 from player import *
+from result import *
+from operator import itemgetter
 
 class ServerGame:
     def __init__(self,clientSockets,screen):
@@ -116,7 +118,7 @@ class ServerGame:
         self.tableCards = []
         self.smallBlind = 10
         self.bigBlind = self.smallBlind * 2
-        self.handWinner = -1
+        self.handWinners = []
         self.numberOfUnfoldedPlayers = self.numberOfActivePlayers
         self.pot = 0
         self.winCards = (self.deck.pop(),self.deck.pop())
@@ -184,7 +186,7 @@ class ServerGame:
         self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
 
     def init_game(self):
-
+        self.resultRating = 0
         self.initGuiFlag = False
 
         self.numberOfPlayers = len(self.clientSockets) + 1
@@ -233,11 +235,10 @@ class ServerGame:
             msgTableCards = json.dumps(self.tableCards)
 
             toCallAmount = self.currentRoundBet - self.players[i].currentRoundBet
-            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.infoFlag, self.winCards, maxBet, 9)
-            msgThings = json.dumps(things)
-            winners = [self.handWinner]
-            msgWinners = json.dumps(winners)
 
+            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.infoFlag, self.winCards, maxBet, self.resultRating)
+            msgThings = json.dumps(things)
+            msgWinners = json.dumps(self.handWinners)
             completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings+"::"+msgWinners
             i+=1
 
@@ -245,11 +246,51 @@ class ServerGame:
             print "Size of message sent : "+ str(sys.getsizeof(completeMessage)) +" bytes!"
 
     def hand_result(self):
-        self.handWinner = self.serverTurn     # Server is the winner
-        self.players[self.handWinner].money += self.pot
+        obj = Result()
+        handStrengths = []
+        for i in self.activePlayers:
+            if not self.players[i].fold:
+                playerCards = self.tableCards[:]
+                playerCards.append(self.cards[i][0])
+                playerCards.append(self.cards[i][1])
+                a,b = obj.hand_strength(playerCards)
+                handStrengths.append((i,a,b))
+                handStrengths = sorted(handStrengths, key=itemgetter(1), reverse=True)
+
+        length = len(handStrengths)
+        for i in range(length-1):
+            if handStrengths[i][1] == handStrengths[i+1][1]:
+                comp = obj.hand_comparator(handStrengths[i][2],handStrengths[i+1][2])
+                if comp == 2:
+                    handStrengths[i],handStrengths[i+1] = handStrengths[i+1],handStrengths[i]   #Swap
+
+        while self.pot != 0:
+            print "inside while pot != 0"
+            for i in range(length):
+                strn = handStrengths[i][1]
+                count = 1
+                self.handWinners.append(handStrengths[i][0])
+                for j in range(i,length-1):
+                    if handStrengths[j][1] != handStrengths[j+1][1] or obj.hand_comparator(handStrengths[j][2],handStrengths[j+1][2]) != 1:
+                        break
+                    count += 1
+                    self.handWinners.append(handStrengths[j+1][0])
+                self.split_pot(handStrengths,i,count)
+                if self.pot == 0:
+                    break
+
+        self.handWinners.append(handStrengths[0][0])     # Server is the winner by default
+        print handStrengths[0]
+        print handStrengths[1]
+        self.players[self.handWinners[0]].money += self.pot
         self.pot = 0
-        self.winCards = self.cards[self.serverTurn]
+        self.winCards = self.cards[self.handWinners[0]]
+        self.resultRating = handStrengths[0][1]
         # self.broadcast()
+
+    def split_pot(self,handStrengths,i,count):
+        for j in range(i,i+count):
+
 
     #GUI should be updated at the time broadcast
     # def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
@@ -578,10 +619,10 @@ class ServerGame:
             return
         #Do something here
         print "Hand completed!"
-        print "Winner is : " + str(self.handWinner)
+        print "Winner is : ", self.handWinners
 
         #Winner box
-        i = self.handWinner
+        i = self.handWinners[0]
         self.screen.blit(but7, self.BOYBUT[self.turnMap[i]])
         textWin, textWinRect = mygui.print_text('freesansbold.ttf', 16, "WINNER!", WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2]-5 )
         self.screen.blit(textWin, textWinRect)
@@ -604,7 +645,7 @@ class ServerGame:
         # self.screen.blit(BG1, (0,400), (0,400,150,40))
         #
         # #Clear winBox
-        # self.draw_boy_box(self.screen, self.handWinner)
+        # self.draw_boy_box(self.screen, self.handWinners)
         #
 
 
