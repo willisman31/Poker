@@ -19,6 +19,13 @@ INITMONEY = 1000
 TABLESCALE = 2
 PICSIZE = (100, 100)
 
+CARDLENIMG = 43
+CARDWIDIMG = 62
+CARDLEN = 36
+CARDWID = 49
+CARDS= pygame.image.load("images/card_spritesheet.png")
+
+
 BG0 = pygame.image.load("images/bg0.jpg")
 BG0 = pygame.transform.scale(BG0, (WIDTH, HEIGHT))
 BG1 = pygame.image.load("images/bg1.jpg")
@@ -54,6 +61,10 @@ but7 = pygame.image.load("images/but3.png")
 but7 = pygame.transform.scale(but7, (90,30))
 but8 = pygame.image.load("images/but8.png")
 but8 = pygame.transform.scale(but8, (90,30))
+
+but9 = pygame.image.load("images/but7.png")
+but9 = pygame.transform.scale(but9, (120,30))
+but9.fill((255, 255, 255, 150), None, pygame.BLEND_RGBA_MULT)
 
 sl1 = pygame.image.load("images/slider0.png")
 sl1 = pygame.transform.scale(sl1, (200,4))

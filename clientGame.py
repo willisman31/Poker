@@ -25,19 +25,21 @@ class ClientGame:
         jsonPlayers = data[2]
         jsonTblCards= data[3]
         jsonThings = data[4]
+        self.winners = data[5]
 
         print "Data received"
         self.myCards = json.loads(jsonCards)
         self.tableCards = json.loads(jsonTblCards)
+        self.winners = json.loads(self.winners)
         self.things = json.loads(jsonThings)
         self.turn = int(self.things[0])
         self.numberOfPlayers = int(self.things[1])
         self.pot = int(self.things[2])
         self.toCallAmount = int(self.things[3])
-        self.winner = int(self.things[4])
-        self.infoFlag = int(self.things[5])
-        self.winCards = self.things[6]
-        self.maxBet = self.things[7]
+        self.infoFlag = int(self.things[4])
+        self.winCards = self.things[5]
+        self.maxBet = self.things[6]
+        self.resultRating = int(self.things[7])
 
         jsonPlayers = json.loads(jsonPlayers)
         self.players = {0:[]}
@@ -59,6 +61,36 @@ class ClientGame:
             self.MONEY.append("$"+str(self.players[str(o)].money))
             self.ROUNDBET.append("$"+str(self.players[str(o)].currentRoundBet))
 
+
+    def load_cards(self):
+        self.cardHearts = []
+        self.cardDiamonds = []
+        self.cardClubs = []
+        self.cardSpades = []
+        self.cardHeartsB = []
+        self.cardDiamondsB = []
+        self.cardClubsB = []
+        self.cardSpadesB = []
+
+        for j in range(4):
+            for i in range(13):
+                card1 = pygame.Surface((CARDLENIMG,CARDWIDIMG), pygame.SRCALPHA, 32)   #Card size 43 * 62
+                card1.blit(CARDS, (0, 0), (i*44, j*63, CARDLENIMG, CARDWIDIMG))
+
+                if j == 0:
+                    self.cardHeartsB.append(card1)
+                    self.cardHearts.append(pygame.transform.scale(card1, (CARDLEN,CARDWID)))     #Size is 36 * 49
+                elif j == 1:
+                    self.cardDiamondsB.append(card1)
+                    self.cardDiamonds.append(pygame.transform.scale(card1, (CARDLEN,CARDWID)))
+                elif j == 2:
+                    self.cardClubsB.append(card1)
+                    self.cardClubs.append(pygame.transform.scale(card1, (CARDLEN,CARDWID)))
+                else :
+                    self.cardSpadesB.append(card1)
+                    self.cardSpades.append(pygame.transform.scale(card1, (CARDLEN,CARDWID)))
+
+
     def init_gui(self, screen):
 
         print "Inside init_gui"
@@ -77,34 +109,69 @@ class ClientGame:
         for i in range(self.numberOfPlayers):
             self.draw_boy_bet(screen, i)
 
-        #Winner cards
-        # testPot.create_button_image(screen, but3, 280, 125 , 80, 50, "Cards", 12, WHITE)
-
-        # Card images
-        # testPot.create_button_image(screen, but3, 220, 180 , 200, 50, "Cards", 12, WHITE)
 
         #Draw init cards
-        txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
-        txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
-        screen.blit(txtCard1, txtCard1Rect1)
-        screen.blit(txtCard2, txtCard2Rect2)
-
-        # #Test code
-        # tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 140+20, 200 )
-        # tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,210+20 ,200  )
-        # tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,280 +20,200  )
-        # screen.blit(tblCard1, tblCard1Rect1)
-        # screen.blit(tblCard2, tblCard2Rect2)
-        # screen.blit(tblCard3, tblCard3Rect3)
-        # tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,350 +20,200  )
-        # screen.blit(tblCard4, tblCard4Rect4)
-        # tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,420 +20,200  )
-        # screen.blit(tblCard5, tblCard5Rect5)
+        self.draw_big_card(screen, self.myCards[0],(50,410))
+        self.draw_big_card(screen, self.myCards[1],(95,410))
 
 
+    def draw_big_card(self, screen, card, (posX, posY)):
+        if card[0] == 'C':
+            if card[1] == 14:
+                screen.blit(self.cardClubsB[0],(posX,posY))
+            else :
+                screen.blit(self.cardClubsB[card[1]-1],(posX,posY))
 
-    def draw_card(self, card):
-        pass
+        elif card[0] == 'H':
+            if card[1] == 14:
+                screen.blit(self.cardHeartsB[0],(posX,posY))
+            else :
+                screen.blit(self.cardHeartsB[card[1]-1],(posX,posY))
+
+        elif card[0] == 'D':
+            if card[1] == 14:
+                screen.blit(self.cardDiamondsB[0],(posX,posY))
+            else :
+                screen.blit(self.cardDiamondsB[card[1]-1],(posX,posY))
+
+        elif card[0] == 'S':
+            if card[1] == 14:
+                screen.blit(self.cardSpadesB[0],(posX,posY))
+            else :
+                screen.blit(self.cardSpadesB[card[1]-1],(posX,posY))
+
+        else : print "Wrong suit! Check your card. :- ",card
+
+
+    def draw_card(self, screen, card, (posX, posY)):
+        if card[0] == 'C':
+            if card[1] == 14:
+                screen.blit(self.cardClubs[0],(posX,posY))
+            else :
+                screen.blit(self.cardClubs[card[1]-1],(posX,posY))
+
+        elif card[0] == 'H':
+            if card[1] == 14:
+                screen.blit(self.cardHearts[0],(posX,posY))
+            else :
+                screen.blit(self.cardHearts[card[1]-1],(posX,posY))
+
+        elif card[0] == 'D':
+            if card[1] == 14:
+                screen.blit(self.cardDiamonds[0],(posX,posY))
+            else :
+                screen.blit(self.cardDiamonds[card[1]-1],(posX,posY))
+
+        elif card[0] == 'S':
+            if card[1] == 14:
+                screen.blit(self.cardSpades[0],(posX,posY))
+            else :
+                screen.blit(self.cardSpades[card[1]-1],(posX,posY))
+
+        else : print "Wrong suit! Check your card. :- ",card
+
+
+
 
     def draw_boy(self, screen, id, myTurn, turn):
         if id == myTurn and id == turn :
@@ -161,6 +228,7 @@ class ClientGame:
 
         self.turnMap = self.order_players(self.myTurn, self.numberOfPlayers)
 
+        self.load_cards()
         self.init_box_coord()
 
         self.init_gui(screen)
@@ -171,6 +239,8 @@ class ClientGame:
         butStr = ["Check", "Fold", "All-in", "Raise"]
         butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30)]
         cardDrawn = [False,False,False,False]
+
+        obj = mygui.Slider(screen,(450,450),(self.toCallAmount,100))
 
         while 1:
             if self.myTurn == self.turn:
@@ -284,35 +354,28 @@ class ClientGame:
             if self.infoFlag == 0:
                 #Draw init cards
                 if not cardDrawn[0]:
-                    txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
-                    txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
-                    screen.blit(txtCard1, txtCard1Rect1)
-                    screen.blit(txtCard2, txtCard2Rect2)
+                    self.draw_big_card(screen, self.myCards[0],(50,410))
+                    self.draw_big_card(screen, self.myCards[1],(95,410))
                     cardDrawn[0] = True
 
             if self.infoFlag == 1:
-                # if not cardDrawn[1]:
-                    tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 220, 200 )
-                    tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,260 ,200  )
-                    tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,300,200  )
-                    screen.blit(tblCard1, tblCard1Rect1)
-                    screen.blit(tblCard2, tblCard2Rect2)
-                    screen.blit(tblCard3, tblCard3Rect3)
+                 if not cardDrawn[1]:
+                    self.draw_card(screen, self.tableCards[0],(220,180))
+                    self.draw_card(screen, self.tableCards[1],(260,180))
+                    self.draw_card(screen, self.tableCards[2],(300,180))
                     cardDrawn[1] = True
 
             elif self.infoFlag == 2:
-                # if not cardDrawn[2]:
-                    tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,340,200  )
-                    screen.blit(tblCard4, tblCard4Rect4)
+                 if not cardDrawn[2]:
+                    self.draw_card(screen, self.tableCards[3],(340,180))
                     cardDrawn[2] = True
             elif self.infoFlag == 3:
-                # if not cardDrawn[3]:
-                    tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,380,200  )
-                    screen.blit(tblCard5, tblCard5Rect5)
+                 if not cardDrawn[3]:
+                    self.draw_card(screen, self.tableCards[4],(380,180))
                     cardDrawn[3] = True
             elif self.infoFlag == 10:
                 self.end_hand(screen, clientSocket)
-                for i in cardDrawn:
+                for i in range(4):
                     cardDrawn[i] = False
 
             #Display pot
@@ -335,27 +398,35 @@ class ClientGame:
             return
         #Do something here
         print "Hand completed!"
-        print "Winner is : " + str(self.winner)
+        print "Winner is : " + str(self.winners)
 
         #Winner box
-        i = self.winner
-        screen.blit(but7, self.BOYBUT[self.turnMap[i]])
-        textWin, textWinRect = mygui.print_text('freesansbold.ttf', 16, "WINNER!", WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2]-5 )
-        screen.blit(textWin, textWinRect)
+        for i in self.winners:
+            screen.blit(but7, self.BOYBUT[self.turnMap[i]])
+            textWin, textWinRect = mygui.print_text('freesansbold.ttf', 16, "WINNER!", WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2]-5 )
+            screen.blit(textWin, textWinRect)
 
         #Winner cards
-        winCard1, winCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.winCards[0][0])+","+str(self.winCards[0][1])+")", WHITE, None, 280, 150 )
-        screen.blit(winCard1, winCard1Rect1)
-        winCard2, winCard1Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.winCards[1][0])+","+str(self.winCards[1][1])+")", WHITE, None, 350, 150 )
-        screen.blit(winCard2, winCard1Rect2)
+        self.draw_card(screen, self.winCards[0],(280,125))
+        self.draw_card(screen, self.winCards[1],(320,125))
+
+        #Result
+        string = self.result_string(self.resultRating)
+        resBut = mygui.Button()
+        resBut.create_button_image(screen, but9, int(TBLWIDTH/2 - (3.5*len(string)))+80, 113 , 7*len(string), 12, string, 11, WHITE)
 
         pygame.display.update()
 
-        time.sleep(3)
+        time.sleep(4)
 
         self.recv(clientSocket)
         self.init_gui(screen)
 
+    def result_string(self, rating):
+        mapping = {1 : "High Card", 2: "One Pair", 3: "Two Pair", 4: "Three of a kind", 5: "Straight", 6: "Flush",
+                    7: "Full House", 8: "Four of a kind", 9: "Straight Flush", 10: "Royal Flush"}
+
+        return mapping[rating]
 
     def order_players(self, myturn, numberOfPlayers):
         order = {0:[]}

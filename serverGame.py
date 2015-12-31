@@ -233,10 +233,12 @@ class ServerGame:
             msgTableCards = json.dumps(self.tableCards)
 
             toCallAmount = self.currentRoundBet - self.players[i].currentRoundBet
-            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.handWinner, self.infoFlag, self.winCards, maxBet)
+            things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.infoFlag, self.winCards, maxBet, 9)
             msgThings = json.dumps(things)
+            winners = [self.handWinner]
+            msgWinners = json.dumps(winners)
 
-            completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings
+            completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings+"::"+msgWinners
             i+=1
 
             cSock.send(completeMessage)
