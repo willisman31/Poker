@@ -83,7 +83,7 @@ class ClientGame:
             if self.myTurn == self.turn:
 
                 g.create_buttons(screen, self.toCallAmount) #Creating all 4 buttons
-                slider1 = mygui.Slider(screen,(450,450),(self.toCallAmount,self.maxBet))    #Creating the raise slider
+                slider1 = mygui.Slider(screen,(450,450),(self.toCallAmount, self.maxBet))    #Creating the raise slider
 
                 pygame.display.update() #Displaying the buttons
 
@@ -118,7 +118,7 @@ class ClientGame:
             else:
                 g.remove_buttons(screen)
                 g.create_transparent_buttons(screen)
-                slider1.slider_remove(screen)
+                g.slider_remove(screen)
 
                 pygame.display.update()
 
@@ -136,7 +136,7 @@ class ClientGame:
         for i in range(self.numberOfPlayers):
             g.draw_boy_bet(screen, i, self.ROUNDBET[i])    #Draw every player's current round bet.
 
-        g.draw_table_cards(screen, self.infoFlag, self.myCards, self.tableCards)    #Draw the cards to be placed on table.
+        g.draw_table_cards(screen, self.infoFlag, self.tableCards)    #Draw the cards to be placed on table.
 
         #Display pot
         if self.pot>0 and self.pot-self.exPot>0:

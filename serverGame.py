@@ -1,10 +1,11 @@
-import sys, pygame, mygui, serverThread, serverGame, time, json, copy
+import sys, pygame, mygui, serverThread, serverGame, time, json, copy, main
 from pygame.locals import *
 from constants import *
 from deck import *
 from player import *
 from result import *
 from operator import itemgetter
+from graphics import *
 
 class ServerGame:
     def __init__(self,clientSockets,screen):
@@ -61,11 +62,8 @@ class ServerGame:
 
 
         self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
-        if not self.initGuiFlag:
-            self.initGuiFlag = True
-            self.gui_main(self.screen)
 
-
+        ###### update the gui?
 
     def start_round(self):
         self.init_round()
@@ -73,29 +71,31 @@ class ServerGame:
         if self.numberOfUnfoldedPlayers <= 1:
             return
 
-#        self.gui_main(self.screen)
-#        self.update_gui(self.screen)
 
         while True:
             self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
-            # self.serverMaxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
-            self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
+            #self.maxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
+
+
+            self.exTurn = self.turn
+
+
+            self.before_move(self.g,self.screen)
 
             if (not self.players[self.turn].fold) and self.players[self.turn].money != 0 and self.players[self.turn].isActive:
                 self.broadcast()
                 if self.turn == self.serverTurn:
-                    recievedBetValue = self.server_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn)    #server_move()
+                    recievedBetValue = self.server_move(self.g,self.screen)    #server_move()
                 else:
-                    self.client_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn)
+                    self.client_move(self.g,self.screen)
                     recievedBetValue = int(self.clientSockets[self.turn].recv(1024))     # wait for client to move
+
                 self.update_game(recievedBetValue)
 
-            self.exTurn = self.turn
             self.exPot = self.pot
-
             self.turn = (self.turn+1)%self.numberOfPlayers
 
-            #self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn)
+            self.after_move(self.g,self.screen)
 
             if self.turn == self.lastRaisedPlayer or self.numberOfUnfoldedPlayers <= 1:
                 break
@@ -124,7 +124,7 @@ class ServerGame:
         self.winCards = (self.deck.pop(),self.deck.pop())
         #Initializing cards
         self.cards = {0:[]}
-        i = 0
+
 
         #Temp changes
         #
@@ -139,7 +139,7 @@ class ServerGame:
         #
         ##############3
 
-
+        i = 0
         for cSock in self.clientSockets:
             self.cards[cSock] = (self.deck.pop(),self.deck.pop())
             self.cards[i] = self.cards[cSock]
@@ -152,7 +152,7 @@ class ServerGame:
             self.players[i].pot = 0
             self.players[i].fold = False
 
-        self.initGuiFlag = False
+        #self.initGuiFlag = False
 
 
     def start_hand(self):
@@ -198,11 +198,12 @@ class ServerGame:
 
         self.turn = -1  #Added by safal
         self.broadcast()          # Final broadcast, broadcast result
-        self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
+        self.after_move(self.g,self.screen)
 
     def init_game(self):
         self.resultRating = 0
-        self.initGuiFlag = False
+
+        self.init_gui()
 
         self.numberOfPlayers = len(self.clientSockets) + 1
         self.numberOfActivePlayers = self.numberOfPlayers
@@ -361,45 +362,11 @@ class ServerGame:
             self.players[i].money += moneyToGive[i]
             self.players[i].money = int(self.players[i].money)
 
-                #
-                # strn = handStrengths[i][1]
-                # count = 1
-                # self.handWinners.append(handStrengths[i][0])
-                # for j in range(i,length-1):
-                #     if handStrengths[j][1] != handStrengths[j+1][1] or obj.hand_comparator(handStrengths[j][2],handStrengths[j+1][2]) != 1:
-                #         break
-                #     count += 1
-                #     self.handWinners.append(handStrengths[j+1][0])
-                # self.split_pot(handStrengths,i,count)
-                # if self.pot == 0:
-                #     break
 
         self.pot = 0
 
         self.winCards = self.cards[self.handWinners[0]]
         self.resultRating = handStrengths[0][1]
-        # self.broadcast()
-
-    # def split_pot(self,handStrengths,i,count):
-    #     for j in range(i,i+count):
-
-
-    #GUI should be updated at the time broadcast
-    # def broadcast(self):    #players, tablecards, turn, numberOfPlayers, pot, toCallAmount = currentRoundBet - currentRoundPlayerBet
-    #
-    #     for cSock in self.clientSockets:
-    #         msgPlayers = json.dumps(self.players, default=lambda o: o.__dict__)
-    #         msgTableCards = json.dumps(self.tableCards)
-    #         things = (self.turn, self.numberOfPlayers, self.pot)
-    #         msgThings = json.dumps(things)
-    #
-    #         completeMessage = msgPlayerCards+"::"+str(i)+"::"+msgPlayers+"::"+msgTableCards+"::"+msgThings
-    #         cSock.send(completeMessage)
-    #         print sys.getsizeof(completeMessage)
-    #         # cSock.send(msgPlayers)
-    #         # cSock.send(msgTableCards)
-    #         # cSock.send(msgThings)
-
 
 
 
@@ -408,87 +375,26 @@ class ServerGame:
     # Code for GUI starts here #
     ############################
 
-    def after_move(self,screen,butList,butStr,butXY,cardDrawn,exTurn,exPot):
+    def init_gui(self):
+        self.g = Graphics()
 
-        # exTurn = self.turn
-        # exPot = self.pot
-
+    def before_move(self,g,screen):
         self.update_MONEY()
+        g.order_players(self.myTurn, self.numberOfPlayers)
+        g.init_gui(screen, self.myTurn, self.turn, self.numberOfPlayers, self.myCards, self.infoFlag, self.MONEY, self.NAMES, self.ROUNDBET)
+        self.update_screen(screen, g)
 
-        self.draw_boy(screen, self.turn, self.myTurn, self.turn)
-        self.draw_boy_box(screen, self.turn)
-
-        self.draw_boy(screen, exTurn, self.myTurn, self.turn)
-        self.draw_boy_box(screen, exTurn)
-
-        for i in range(self.numberOfPlayers):
-            self.draw_boy_bet(screen, i)
-
-
-        if self.infoFlag == 0:
-            #Draw init cards
-            if not cardDrawn[0]:
-                txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
-                txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
-                screen.blit(txtCard1, txtCard1Rect1)
-                screen.blit(txtCard2, txtCard2Rect2)
-                cardDrawn[0] = True
-
-        if self.infoFlag == 1:
-            if not cardDrawn[1]:
-                tblCard1, tblCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[0][0])+","+str(self.tableCards[0][1])+")", WHITE, None, 220, 200 )
-                tblCard2, tblCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[1][0])+","+str(self.tableCards[1][1])+")", WHITE, None,260 ,200  )
-                tblCard3, tblCard3Rect3 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[2][0])+","+str(self.tableCards[2][1])+")", WHITE, None,300,200  )
-                screen.blit(tblCard1, tblCard1Rect1)
-                screen.blit(tblCard2, tblCard2Rect2)
-                screen.blit(tblCard3, tblCard3Rect3)
-                cardDrawn[1] = True
-
-        elif self.infoFlag == 2:
-            if not cardDrawn[2]:
-                tblCard4, tblCard4Rect4 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[3][0])+","+str(self.tableCards[3][1])+")", WHITE, None,340,200  )
-                screen.blit(tblCard4, tblCard4Rect4)
-                cardDrawn[2] = True
-        elif self.infoFlag == 3:
-            if not cardDrawn[3]:
-                tblCard5, tblCard5Rect5 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.tableCards[4][0])+","+str(self.tableCards[4][1])+")", WHITE, None,380,200  )
-                screen.blit(tblCard5, tblCard5Rect5)
-                cardDrawn[3] = True
-        elif self.infoFlag == 10:
-            self.end_hand()
-            for i in cardDrawn:
-                cardDrawn[i] = False
-
-        #Display pot
-        if self.pot>0 and self.pot-exPot>0:
-            self.pot_animation(screen, self.pot)
-
-
-        pygame.display.update()
-
-
-    def server_move(self,screen,butList,butStr,butXY,cardDrawn):
+    def server_move(self,g,screen):
         maxPlayerMoney = 0
         for j in self.activePlayers:
             if not self.players[j].fold and j != self.serverTurn:
                 maxPlayerMoney = max(maxPlayerMoney,self.players[j].money + self.players[j].currentRoundBet)
         self.maxBet = min(maxPlayerMoney - self.players[self.serverTurn].currentRoundBet, self.players[self.serverTurn].money)
 
-        #Create all buttons
-        for o in range(4):
-            if o==0 and self.toCallAmount != 0:
-                strCall = "Call $"+ str(self.toCallAmount)
-                butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-            else:
-                butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
 
-        pygame.display.update()
-
-        butHover = [False, False, False, False]
-
-        #Create raise slider
-        self.obj = mygui.Slider(screen,(450,450),(self.toCallAmount,self.maxBet))
-
+        g.create_buttons(screen, self.toCallAmount) #Creating all 4 buttons
+        slider1 = mygui.Slider(screen,(450,450),(self.toCallAmount,self.maxBet))    #Creating the raise slider
+        pygame.display.update() #Displaying the buttons
 
         quit = False
         while not quit:
@@ -498,163 +404,51 @@ class ServerGame:
                     sys.exit()
 
                 #Slider event handle
-                self.obj.event_slider(event, pygame.mouse.get_pos())
-                #Updating the slider values
-                self.obj.slider_update(screen)
+                slider1.event_slider(event, pygame.mouse.get_pos())
+                slider1.slider_update(screen)
 
                 #Mouse Hover handling
-                MOUSEPOS = pygame.mouse.get_pos()
-                for o in range(4):
-                    if butList[o].hover(MOUSEPOS):
-                        if not butHover[o]:
-                            screen.blit(BG1,(butXY[o][0],butXY[o][1]),butXY[o])
-                            if o==0 and self.toCallAmount != 0:
-                                strCall = "Call $"+ str(self.toCallAmount)
-                                butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-                            else:
-                                butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-                            pygame.display.update()
-                            butHover[o] = True
-                    else:
-                        if butHover[o]:
-                            if o==0 and self.toCallAmount != 0:
-                                strCall = "Call $"+ str(self.toCallAmount)
-                                butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], strCall, 16, WHITE)
-                            else:
-                                butList[o].create_button_image(screen, but5, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-                            pygame.display.update()
-                            butHover[o] = False
+                g.mouse_hover(screen, self.toCallAmount)
 
                 #Mouse click handling
-                isSend = False
-                if event.type == MOUSEBUTTONDOWN:
-                    if butList[0].pressed(pygame.mouse.get_pos()):
-                        state = self.toCallAmount
-                        isSend = True
-                    elif butList[1].pressed(pygame.mouse.get_pos()):
-                        state = -1
-                        isSend = True
-                    elif butList[2].pressed(pygame.mouse.get_pos()):
-                        state = self.maxBet
-                        isSend = True
-                    elif butList[3].pressed(pygame.mouse.get_pos()):
-                        state = self.obj.getValue()
-                        isSend = True
+                isSend, state = g.mouse_click(screen, event, self.toCallAmount, self.maxBet, slider1.getValue())
 
+                #Sending data if button clicked
                 if isSend == True:
-                    return state
-                    # clientSocket.send(str(state))
-                    # isSend = False
-                    # quit = True
-                    # break
+                    #data = clientSocket.send(str(state))
+                    quit = True
+                    break
+        return state
 
+    def client_move(self,g,screen):
+        g.remove_buttons(screen)
+        g.create_transparent_buttons(screen)
+        g.slider_remove(screen)
 
-    def client_move(self,screen,butList,butStr,butXY,cardDrawn):
-        screen.blit(BG1,(198,405),(198,405,244,64))
-
-        #Create all buttons
-        for o in range(4):
-            butList[o].create_button_image(screen, but4, butXY[o][0], butXY[o][1], butXY[o][2], butXY[o][3], butStr[o], 16, WHITE)
-
-        #Remove slider
-        self.obj.slider_remove(screen)
-
-
+    def after_move(self,g,screen):
+        g.end_hand(screen, self.infoFlag, self.handWinners, self.winCards, self.resultRating)   #Result and winner display
         pygame.display.update()
 
 
-    def init_gui(self, screen):
 
-        print "Inside init_gui"
-        screen.blit(BG1, (0,0))
-        screen.blit(PKT1, TBLTOPLEFT)
+    def update_screen(self, screen, g):
 
-        #Putting players across the table
+        g.draw_boy(screen, self.turn, self.myTurn, self.turn)    #Redrawing the current player's image
+        g.draw_boy_box(screen, self.turn, self.MONEY[self.turn], self.NAMES[self.turn])    #Redrawing current player's text box
+
+        g.draw_boy(screen, self.exTurn, self.myTurn, self.turn)   #Redrawing the last player's image
+        g.draw_boy_box(screen, self.exTurn, self.MONEY[self.exTurn], self.NAMES[self.exTurn])   #Redrawing the last player's text box
+
         for i in range(self.numberOfPlayers):
-            self.draw_boy(screen,i,self.serverTurn, self.turn)
+            g.draw_boy_bet(screen, i, self.ROUNDBET[i])    #Draw every player's current round bet.
 
-        #Putting textbuttons
-        for i in range(self.numberOfPlayers):
-            self.draw_boy_box(screen, i)
+        g.draw_table_cards(screen, self.infoFlag, self.tableCards)    #Draw the cards to be placed on table.
 
-        #Putting boyBet
-        for i in range(self.numberOfPlayers):
-            self.draw_boy_bet(screen, i)
+        #Display pot
+        if self.pot>0 and self.pot-self.exPot>0:
+            g.pot_animation(screen, self.pot)
 
-
-        #Draw init cards
-        txtCard1, txtCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[0][0])+","+str(self.myCards[0][1])+")", WHITE, None, 50, 420 )
-        txtCard2, txtCard2Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.myCards[1][0])+","+str(self.myCards[1][1])+")", WHITE, None,120 ,420  )
-        screen.blit(txtCard1, txtCard1Rect1)
-        screen.blit(txtCard2, txtCard2Rect2)
-
-        self.exTurn = self.turn
-        self.exPot = 0
-        self.obj= mygui.Slider(screen,(450,450),(0,0))
-        self.obj.slider_remove(screen)
-
-
-    def draw_boy(self, screen, id, myTurn, turn):
-        if id == -1 : return
-        if id == myTurn and id == turn :
-            screen.blit(boy2, BOYS[self.turnMap[id]])
-        elif id == myTurn and id != turn :
-            screen.blit(boy0, BOYS[self.turnMap[id]])
-        elif id != myTurn and id == turn :
-            screen.blit(boy3, BOYS[self.turnMap[id]])
-        else :
-            screen.blit(boy1, BOYS[self.turnMap[id]])
-
-    def draw_boy_box(self, screen, i):
-        if i == -1 : return
-        screen.blit(but1, self.BOYBUT[self.turnMap[i]])
-
-        textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(self.MONEY[i]), WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2] )
-        textName, textNameRect = mygui.print_text('freesansbold.ttf', 13, self.NAMES[i], WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][1] )
-        screen.blit(textMoney, textMoneyRect)
-        screen.blit(textName, textNameRect)
-
-    def draw_boy_bet(self, screen, i):
-        obj = mygui.Button()
-        screen.blit(PKT1,(self.BUTROUNDBET[self.turnMap[i]][0], self.BUTROUNDBET[self.turnMap[i]][1]),(self.BUTROUNDBET[self.turnMap[i]][0]-80, self.BUTROUNDBET[self.turnMap[i]][1]-80,20+6*11,20))
-        if self.ROUNDBET[i]!="$0":
-            obj.create_button_image(screen, but8, self.BUTROUNDBET[self.turnMap[i]][0], self.BUTROUNDBET[self.turnMap[i]][1] , 20+6*len(self.ROUNDBET[i]), 15, self.ROUNDBET[i], 12, WHITE)
-
-
-    def init_box_coord(self):
-        #List of coordinates for the button and textboxes below player picture
-        self.BOYBUT = []
-        self.BOYTXTBOX = [] # Tuple of 3 coordinates. Two different y coordinates and one same x coordinate for the text (x, y1, y2)
-        self.BUTROUNDBET = [(115,150),(175,120),(275,120),(375,120),(445,150),(455,200),(425,235),(175,265),(275,265),(375,265),(135,235),(105,200)]
-        for i in range(12):
-            self.BOYBUT.append((BOYS[i][0]+5, BOYS[i][1]+86))
-            self.BOYTXTBOX.append((BOYS[i][0]+50, BOYS[i][1]+94,BOYS[i][1]+108))
-
-
-    def pot_animation(self, screen, num):
-        tempList = []
-        for i in range(20,0,-1):
-            tempList.append(num/i)
-
-        screen.blit(PKT1, (250,int(2*TBLHEIGHT/3+80)),(170,int(2*TBLHEIGHT/3),120,20) )
-        testPot = mygui.Button()
-        for i in tempList:
-            string = "$"+str(i)
-            screen.blit(PKT1, (int(TBLWIDTH/2 - (10+3.5*len(string))+80), 2*TBLHEIGHT/3+80), (int(TBLWIDTH/2 - (10+3.5*len(string))),2*TBLHEIGHT/3,20+7*len(string), 20))
-            testPot.create_button_image(screen, but6, int(TBLWIDTH/2 - (10+3.5*len(string)))+80, 2*TBLHEIGHT/3+80 , 20 + 7*len(string), 20, string, 13, WHITE)
-            pygame.display.update()
-            time.sleep(0.02)
-
-
-
-
-    def gui_main(self, screen):
-
-        self.turnMap = self.order_players(self.serverTurn, self.numberOfPlayers)
-        self.init_box_coord()
-
+    def update_MONEY(self):
         self.NAMES = []
         self.MONEY = []
         self.ROUNDBET=[]
@@ -662,86 +456,6 @@ class ServerGame:
             self.NAMES.append(self.players[i].name)
             self.MONEY.append("$"+str(self.players[i].money))
             self.ROUNDBET.append("$"+str(self.players[i].currentRoundBet))
-
-        self.init_gui(screen)
-
-        self.testPot = mygui.Button()
-
-        self.butList = [mygui.Button(),mygui.Button(),mygui.Button(),mygui.Button()]
-        self.butStr = ["Check", "Fold", "All-in", "Raise"]
-        self.butXY = [(198, 405, 120, 30),(322, 405, 120, 30),(198, 439, 120, 30),(322, 439, 120, 30)]
-        self.cardDrawn = [False,False,False,False]
-
-
-# pygame.display.update()
-        # time.sleep(60)
-
-
-    def update_MONEY(self):
-        self.MONEY = []
-        self.ROUNDBET = []
-        for i in range(self.numberOfPlayers):
-            self.MONEY.append("$"+str(self.players[i].money))
-            self.ROUNDBET.append("$"+str(self.players[i].currentRoundBet))
-
-
-    def order_players(self, myturn, numberOfPlayers):
-        order = {0:[]}
-        fo = list(ORDER[:numberOfPlayers])
-        fo.sort()
-        while True:
-            if fo[0] == 8:  #8 is the middle player for now
-                break
-            temp = fo[0]
-            del fo[0]
-            fo.append(temp)
-        fu = range(0, numberOfPlayers)
-        while True:
-            if fu[0] == myturn:
-                break
-            temp = fu[0]
-            del fu[0]
-            fu.append(temp)
-        for i in range(0, numberOfPlayers):
-            order[fu[i]] = fo[i]
-        return order
-
-
-    def end_hand(self):
-        if self.infoFlag != 10:
-            return
-        #Do something here
-        print "Hand completed!"
-        print "Winner is : ", self.handWinners
-
-        #Winner box
-        i = self.handWinners[0]
-        self.screen.blit(but7, self.BOYBUT[self.turnMap[i]])
-        textWin, textWinRect = mygui.print_text('freesansbold.ttf', 16, "WINNER!", WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2]-5 )
-        self.screen.blit(textWin, textWinRect)
-
-        #Winner cards
-        winCard1, winCard1Rect1 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.winCards[0][0])+","+str(self.winCards[0][1])+")", WHITE, None, 280, 150 )
-        self.screen.blit(winCard1, winCard1Rect1)
-        winCard2, winCard1Rect2 = mygui.print_text('freesansbold.ttf', 16, "("+str(self.winCards[1][0])+","+str(self.winCards[1][1])+")", WHITE, None, 350, 150 )
-        self.screen.blit(winCard2, winCard1Rect2)
-
-        pygame.display.update()
-
-        time.sleep(3)
-
-        # #Clear table (TableCards + Pot)
-        # self.screen.blit(PKT1,(80+50,180),(50,100,TBLWIDTH-100,70))
-        # self.screen.blit(PKT1,(260,130),(180,50,140,40))
-        #
-        # #Clear winhand
-        # self.screen.blit(BG1, (0,400), (0,400,150,40))
-        #
-        # #Clear winBox
-        # self.draw_boy_box(self.screen, self.handWinners)
-        #
-
-
 
 
     ##########################

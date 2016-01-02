@@ -268,7 +268,7 @@ class Graphics:
         self.draw_card(screen, winCards[0],WINCARDS[0])
         self.draw_card(screen, winCards[1],WINCARDS[1])
 
-    def draw_table_cards(self, screen, infoFlag, myCards, tableCards):
+    def draw_table_cards(self, screen, infoFlag, tableCards):
         MYCARDXY = [(50,410),(95,410)]
         TABLECARDXY = [(220,180),(260,180),(300,180),(340,180),(380,180)]
 
@@ -360,6 +360,11 @@ class Graphics:
                 self.BUTLIST[o].create_button_image(screen, Graphics.IMGBUT5, Graphics.BUTXY[o][0], Graphics.BUTXY[o][1], Graphics.BUTXY[o][2], Graphics.BUTXY[o][3], strCall, 16, WHITE)
             else:
                 self.BUTLIST[o].create_button_image(screen, Graphics.IMGBUT5, Graphics.BUTXY[o][0], Graphics.BUTXY[o][1], Graphics.BUTXY[o][2], Graphics.BUTXY[o][3], Graphics.BUTSTR[o], 16, WHITE)
+
+
+    def slider_remove(self, screen):
+        screen.blit(BG1,(440,425),(440,425,200,65))
+        pygame.display.update()
 
     def create_transparent_buttons(self, screen):
         #Create new transparent buttons

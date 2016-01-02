@@ -199,11 +199,6 @@ class Slider():
         self.s1.create_button_image(screen, SL2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
         pygame.display.update()
 
-    def slider_remove(self, screen):
-        screen.blit(BG1,(self.surRect.topleft),self.surRect)
-        screen.blit(BG1,(self.exImgX,self.SLIDERY-((self.SLIDERBUTWID-self.SLIDERWID)/2)),(self.exImgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERLEN,self.SLIDERBUTWID))
-        pygame.display.update()
-
     def event_slider(self, event, mouse):
         if event.type == MOUSEMOTION:
             if ((event.buttons[0] and self.s1.pressed(pygame.mouse.get_pos())) or (self.s1.pressed(pygame.mouse.get_pos()))):
