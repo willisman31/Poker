@@ -59,7 +59,7 @@ class PokerClient:
 
             if serPort =="":
                 serPort = "1234"
-            cliObj = clientThread.ClientThread(str(serIP),int(serPort))
+            cliObj = clientThread.ClientThread(str(serIP),int(serPort), screen)
 
             #Button1.delete_button(screen, BACK_SCREEN)
             screen.blit(BG0, (WIDTH/2-WIDTH/6-10, HEIGHT/2-10), (WIDTH/2-WIDTH/6-10, HEIGHT/2-10,Button1.rect.width+20,Button1.rect.height+20)) #Remove Button surface

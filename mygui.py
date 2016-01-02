@@ -195,8 +195,8 @@ class Slider():
 
         self.s = mygui.Button()
         self.s1 = mygui.Button()
-        self.s.create_button_image(screen, sl1, self.imgX,self.imgY,self.SLIDERLEN,self.SLIDERWID)
-        self.s1.create_button_image(screen, sl2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
+        self.s.create_button_image(screen, SL1, self.imgX,self.imgY,self.SLIDERLEN,self.SLIDERWID)
+        self.s1.create_button_image(screen, SL2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
         pygame.display.update()
 
     def slider_remove(self, screen):
@@ -221,8 +221,8 @@ class Slider():
 
     def slider_update(self, screen):
         screen.blit(BG1,(self.exImgX,self.SLIDERY-((self.SLIDERBUTWID-self.SLIDERWID)/2)),(self.exImgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERLEN,self.SLIDERBUTWID))
-        self.s.create_button_image(screen, sl1, self.SLIDERX,self.SLIDERY,self.SLIDERLEN,self.SLIDERWID)
-        self.s1.create_button_image(screen, sl2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
+        self.s.create_button_image(screen, SL1, self.SLIDERX,self.SLIDERY,self.SLIDERLEN,self.SLIDERWID)
+        self.s1.create_button_image(screen, SL2, self.imgX,self.imgY-((self.SLIDERBUTWID-self.SLIDERWID)/2),self.SLIDERBUTLEN,self.SLIDERBUTWID)
 
         exSurRect = self.surRect
         screen.blit(BG1,(exSurRect.topleft),exSurRect)

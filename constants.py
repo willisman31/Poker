@@ -23,7 +23,7 @@ CARDLENIMG = 43
 CARDWIDIMG = 62
 CARDLEN = 36
 CARDWID = 49
-CARDS= pygame.image.load("images/card_spritesheet.png")
+CARDS= pygame.image.load("images/cards.png")
 
 
 BG0 = pygame.image.load("images/bg0.jpg")
@@ -32,6 +32,11 @@ BG1 = pygame.image.load("images/bg1.jpg")
 BG1 = pygame.transform.scale(BG1, (WIDTH, HEIGHT))
 PKT1 = pygame.image.load("images/pkt0.png")
 PKT1 = pygame.transform.scale(PKT1, (int(TABLESCALE*HEIGHT/2), HEIGHT/2)) #480 * 240
+SL1 = pygame.image.load("images/slider0.png")
+SL1 = pygame.transform.scale(SL1, (200,4))
+SL2 = pygame.image.load("images/slider1.png")
+SL2 = pygame.transform.scale(SL2, (39,20))
+
 boy0 = pygame.image.load("images/boy1.png")
 boy0 = pygame.transform.scale(boy0, PICSIZE)
 boy1 = pygame.image.load("images/boy2.png")
@@ -66,10 +71,6 @@ but9 = pygame.image.load("images/but7.png")
 but9 = pygame.transform.scale(but9, (120,30))
 but9.fill((255, 255, 255, 150), None, pygame.BLEND_RGBA_MULT)
 
-sl1 = pygame.image.load("images/slider0.png")
-sl1 = pygame.transform.scale(sl1, (200,4))
-sl2 = pygame.image.load("images/slider1.png")
-sl2 = pygame.transform.scale(sl2, (39,20))
 
 
 

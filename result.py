@@ -9,7 +9,7 @@ class Result:
                 return 2
         return 0
 
-        
+
     def hand_strength(self,cards):
         cards = sorted(cards,key=itemgetter(1), reverse=True)
         self.topFiveCards = []

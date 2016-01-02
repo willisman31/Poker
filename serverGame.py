@@ -125,6 +125,21 @@ class ServerGame:
         #Initializing cards
         self.cards = {0:[]}
         i = 0
+
+        #Temp changes
+        #
+        # tempc = (self.deck.pop(),self.deck.pop())
+        # for cSock in self.clientSockets:
+        #     self.cards[cSock] = tempc
+        #     self.cards[i] = self.cards[cSock]
+        #     i += 1
+        # self.cards[self.serverTurn] = tempc#(self.deck.pop(),self.deck.pop()) #Server Cards
+        #
+        # self.myCards = self.cards[self.serverTurn]
+        #
+        ##############3
+
+
         for cSock in self.clientSockets:
             self.cards[cSock] = (self.deck.pop(),self.deck.pop())
             self.cards[i] = self.cards[cSock]
@@ -181,7 +196,7 @@ class ServerGame:
         while self.players[self.start].isActive == False:
             self.start = (self.start + 1)%self.numberOfPlayers
 
-
+        self.turn = -1  #Added by safal
         self.broadcast()          # Final broadcast, broadcast result
         self.after_move(self.screen,self.butList,self.butStr,self.butXY,self.cardDrawn,self.exTurn,self.exPot)
 
@@ -235,7 +250,6 @@ class ServerGame:
             msgTableCards = json.dumps(self.tableCards)
 
             toCallAmount = self.currentRoundBet - self.players[i].currentRoundBet
-
             things = (self.turn, self.numberOfPlayers, self.pot, toCallAmount, self.infoFlag, self.winCards, maxBet, self.resultRating)
             msgThings = json.dumps(things)
             msgWinners = json.dumps(self.handWinners)
@@ -248,14 +262,23 @@ class ServerGame:
     def hand_result(self):
         obj = Result()
         handStrengths = []
+        extraMoney = {0:[]}
+        moneyToGive = []
+        for i in range(self.numberOfPlayers):
+            moneyToGive.append(0.0)
         for i in self.activePlayers:
+            extraMoney[i] = float(self.players[i].pot)
             if not self.players[i].fold:
                 playerCards = self.tableCards[:]
                 playerCards.append(self.cards[i][0])
                 playerCards.append(self.cards[i][1])
                 a,b = obj.hand_strength(playerCards)
-                handStrengths.append((i,a,b))
-                handStrengths = sorted(handStrengths, key=itemgetter(1), reverse=True)
+                handStrengths.append((i,a,b,self.players[i].pot))
+
+
+
+        handPot = sorted(handStrengths, key=itemgetter(3), reverse=True)
+        handStrengths = sorted(handStrengths, key=itemgetter(1), reverse=True)
 
         length = len(handStrengths)
         for i in range(length-1):
@@ -264,32 +287,101 @@ class ServerGame:
                 if comp == 2:
                     handStrengths[i],handStrengths[i+1] = handStrengths[i+1],handStrengths[i]   #Swap
 
-        while self.pot != 0:
-            print "inside while pot != 0"
-            for i in range(length):
-                strn = handStrengths[i][1]
-                count = 1
-                self.handWinners.append(handStrengths[i][0])
-                for j in range(i,length-1):
-                    if handStrengths[j][1] != handStrengths[j+1][1] or obj.hand_comparator(handStrengths[j][2],handStrengths[j+1][2]) != 1:
+        # Removes all from handPot who won't get any money
+        for i in range(length):
+            temp = handStrengths[i]
+            for j in range(length):
+                if handStrengths[j][3] >= handStrengths[i][3]:
+                    if handStrengths[j][1] > handStrengths[i][1] or (handStrengths[j][1] == handStrengths[i][1] and obj.hand_comparator(handStrengths[j][2],handStrengths[i][2]) == 1):
+                        #moneyToGive.append(0.0)
+                        #extraMoney.append(temp[3])
+                        handPot.remove(temp)
                         break
-                    count += 1
-                    self.handWinners.append(handStrengths[j+1][0])
-                self.split_pot(handStrengths,i,count)
-                if self.pot == 0:
+
+        handPot = sorted(handPot, key=itemgetter(3), reverse=True)
+        length = len(handPot)
+
+        print handPot
+        print length
+        print extraMoney
+
+
+        self.handWinners = []
+        for i in range(length):
+            self.handWinners.append(handPot[i][0])
+
+
+        extraMoneyLength = len(extraMoney)
+
+        while self.pot != 0 and len(handPot) > 0:
+            print "in loop 1"
+            length = len(handPot)
+            if length == 1:
+                self.players[handPot[0][0]].money += self.pot       #Last player may get some extra money
+                break
+
+            countEqual = 1
+            for i in range(1,length):
+                if handPot[i][1] == handPot[0][1] and obj.hand_comparator(handPot[i][2],handPot[0][2])==0:
+                    countEqual += 1
+                else:
+                    break
+            print countEqual
+            while True:
+                largestPot = handPot[0][3]
+                lessPot = 0
+                count = 1
+                for i in range(1,length):
+                    if handPot[i][3] < largestPot:
+                        lessPot = handPot[i][3]
+                        break
+                    count +=1
+                diffPot = largestPot - lessPot
+                exMon = 0
+                for i in range(extraMoneyLength):
+                    exMon += extraMoney[i] - min(lessPot,extraMoney[i])
+                    extraMoney[i] = min(lessPot,extraMoney[i])
+                tempd = int(count)
+
+                for i in range(0,tempd):
+                    tmp = handPot[i][0]
+                    moneyToGive[tmp] = moneyToGive[tmp] + exMon/count
+                    hp = (handPot[i][0],handPot[i][1],handPot[i][2],lessPot)
+                    handPot[i] = hp
+                self.pot -= exMon
+
+                if count == countEqual:
+                    for i in range(tempd):
+                        del handPot[0]
                     break
 
-        self.handWinners.append(handStrengths[0][0])     # Server is the winner by default
-        print handStrengths[0]
-        print handStrengths[1]
-        self.players[self.handWinners[0]].money += self.pot
+
+
+        for i in range(self.numberOfPlayers):
+            self.players[i].money += moneyToGive[i]
+            self.players[i].money = int(self.players[i].money)
+
+                #
+                # strn = handStrengths[i][1]
+                # count = 1
+                # self.handWinners.append(handStrengths[i][0])
+                # for j in range(i,length-1):
+                #     if handStrengths[j][1] != handStrengths[j+1][1] or obj.hand_comparator(handStrengths[j][2],handStrengths[j+1][2]) != 1:
+                #         break
+                #     count += 1
+                #     self.handWinners.append(handStrengths[j+1][0])
+                # self.split_pot(handStrengths,i,count)
+                # if self.pot == 0:
+                #     break
+
         self.pot = 0
+
         self.winCards = self.cards[self.handWinners[0]]
         self.resultRating = handStrengths[0][1]
         # self.broadcast()
 
-    def split_pot(self,handStrengths,i,count):
-        for j in range(i,i+count):
+    # def split_pot(self,handStrengths,i,count):
+    #     for j in range(i,i+count):
 
 
     #GUI should be updated at the time broadcast
@@ -505,7 +597,7 @@ class ServerGame:
 
 
     def draw_boy(self, screen, id, myTurn, turn):
-
+        if id == -1 : return
         if id == myTurn and id == turn :
             screen.blit(boy2, BOYS[self.turnMap[id]])
         elif id == myTurn and id != turn :
@@ -516,6 +608,7 @@ class ServerGame:
             screen.blit(boy1, BOYS[self.turnMap[id]])
 
     def draw_boy_box(self, screen, i):
+        if i == -1 : return
         screen.blit(but1, self.BOYBUT[self.turnMap[i]])
 
         textMoney, textMoneyRect = mygui.print_text('freesansbold.ttf', 13, str(self.MONEY[i]), WHITE, None,self.BOYTXTBOX[self.turnMap[i]][0],self.BOYTXTBOX[self.turnMap[i]][2] )
