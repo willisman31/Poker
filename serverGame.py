@@ -60,7 +60,6 @@ class ServerGame:
 
         self.lastRaisedPlayer = self.turn
 
-
         self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
 
         ###### update the gui?
@@ -76,10 +75,6 @@ class ServerGame:
             self.toCallAmount = self.currentRoundBet - self.players[self.serverTurn].currentRoundBet
             #self.maxBet = min(self.maxPlayerMoney,self.players[self.serverTurn].money)
 
-
-            self.exTurn = self.turn
-
-
             self.before_move(self.g,self.screen)
 
             if (not self.players[self.turn].fold) and self.players[self.turn].money != 0 and self.players[self.turn].isActive:
@@ -92,6 +87,7 @@ class ServerGame:
 
                 self.update_game(recievedBetValue)
 
+            self.exTurn = self.turn
             self.exPot = self.pot
             self.turn = (self.turn+1)%self.numberOfPlayers
 
@@ -124,6 +120,7 @@ class ServerGame:
         self.winCards = (self.deck.pop(),self.deck.pop())
         #Initializing cards
         self.cards = {0:[]}
+
 
 
         #Temp changes
@@ -211,6 +208,7 @@ class ServerGame:
         self.serverTurn = self.numberOfPlayers - 1
         self.start = 0
         self.myTurn = self.serverTurn
+        self.exTurn = -1
 
 
         #Initializing cards and player
@@ -426,12 +424,15 @@ class ServerGame:
         g.slider_remove(screen)
 
     def after_move(self,g,screen):
+        if self.infoFlag == 10: self.before_move(self.g,self.screen)
         g.end_hand(screen, self.infoFlag, self.handWinners, self.winCards, self.resultRating)   #Result and winner display
         pygame.display.update()
 
 
 
     def update_screen(self, screen, g):
+
+        print "Turn ", self.turn, "ExTurn ", self.exTurn
 
         g.draw_boy(screen, self.turn, self.myTurn, self.turn)    #Redrawing the current player's image
         g.draw_boy_box(screen, self.turn, self.MONEY[self.turn], self.NAMES[self.turn])    #Redrawing current player's text box

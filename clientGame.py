@@ -127,6 +127,7 @@ class ClientGame:
 
     def update_screen(self, screen, g):
 
+        print "Turn ", self.turn, "ExTurn ", self.exTurn
         g.draw_boy(screen, self.turn, self.myTurn, self.turn)    #Redrawing the current player's image
         g.draw_boy_box(screen, self.turn, self.MONEY[self.turn], self.NAMES[self.turn])    #Redrawing current player's text box
 
