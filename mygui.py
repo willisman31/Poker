@@ -115,7 +115,7 @@ class TextBox(object):
                     "outline_color" : pygame.Color("black"),
                     "outline_width" : 2,
                     "active_color" : pygame.Color("black"),
-                    "font" : pygame.font.Font('freesansbold.ttf', 3*self.rect.height/4),
+                    "font" : pygame.font.Font('freesansbold.ttf', int(3*self.rect.height/4)),
                     "clear_on_enter" : False,
                     "inactive_on_enter" : True}
         for kwarg in kwargs:
@@ -176,7 +176,7 @@ class TextBox(object):
 
 
 class Slider():
-    def __init__(self,screen, (posX,posY),(minVal,maxVal)):
+    def __init__(self,screen, posX, posY, minVal, maxVal):
         self.surRect = Rect(0,0,0,0)
 
         self.minVal = minVal

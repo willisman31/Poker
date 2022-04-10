@@ -102,8 +102,8 @@ class Graphics:
         if infoFlag != 10:
             return
         #For debugging
-        print "Hand completed!"
-        print "Winners are : " + str(winners)
+        print("Hand completed!")
+        print("Winners are : " + str(winners))
 
         #Winner boxes
         self.draw_win_box(screen, winners)
@@ -201,60 +201,60 @@ class Graphics:
             obj.create_button_image(screen, Graphics.IMGBUT8, Graphics.BUTROUNDBET[self.turnMap[i]][0], Graphics.BUTROUNDBET[self.turnMap[i]][1] , 20+6*len(money), 15, money, 12, WHITE)
 
 
-    def draw_big_card(self, screen, card, (posX, posY)):
+    def draw_big_card(self, screen, card, posX, posY):
         if card[0] == 'C':
             if card[1] == 14:
-                screen.blit(self.cardClubsB[0],(posX,posY))
+                screen.blit(self.cardClubsB[0],posX, posY)
             else :
-                screen.blit(self.cardClubsB[card[1]-1],(posX,posY))
+                screen.blit(self.cardClubsB[card[1]-1], posX, posY)
 
         elif card[0] == 'H':
             if card[1] == 14:
-                screen.blit(self.cardHeartsB[0],(posX,posY))
+                screen.blit(self.cardHeartsB[0], posX, posY)
             else :
-                screen.blit(self.cardHeartsB[card[1]-1],(posX,posY))
+                screen.blit(self.cardHeartsB[card[1]-1], posX, posY)
 
         elif card[0] == 'D':
             if card[1] == 14:
-                screen.blit(self.cardDiamondsB[0],(posX,posY))
+                screen.blit(self.cardDiamondsB[0], posX, posY)
             else :
-                screen.blit(self.cardDiamondsB[card[1]-1],(posX,posY))
+                screen.blit(self.cardDiamondsB[card[1]-1], posX, posY)
 
         elif card[0] == 'S':
             if card[1] == 14:
-                screen.blit(self.cardSpadesB[0],(posX,posY))
+                screen.blit(self.cardSpadesB[0], posX, posY)
             else :
-                screen.blit(self.cardSpadesB[card[1]-1],(posX,posY))
+                screen.blit(self.cardSpadesB[card[1]-1], posX, posY)
 
-        else : print "Wrong suit! Check your card. :- ",card
+        else : print("Wrong suit! Check your card. :- ",card)
 
 
-    def draw_card(self, screen, card, (posX, posY)):
+    def draw_card(self, screen, card, posX, posY):
         if card[0] == 'C':
             if card[1] == 14:
-                screen.blit(self.cardClubs[0],(posX,posY))
+                screen.blit(self.cardClubs[0], posX, posY)
             else :
-                screen.blit(self.cardClubs[card[1]-1],(posX,posY))
+                screen.blit(self.cardClubs[card[1]-1], posX, posY)
 
         elif card[0] == 'H':
             if card[1] == 14:
-                screen.blit(self.cardHearts[0],(posX,posY))
+                screen.blit(self.cardHearts[0], posX, posY)
             else :
-                screen.blit(self.cardHearts[card[1]-1],(posX,posY))
+                screen.blit(self.cardHearts[card[1]-1], posX, posY)
 
         elif card[0] == 'D':
             if card[1] == 14:
-                screen.blit(self.cardDiamonds[0],(posX,posY))
+                screen.blit(self.cardDiamonds[0], posX, posY)
             else :
-                screen.blit(self.cardDiamonds[card[1]-1],(posX,posY))
+                screen.blit(self.cardDiamonds[card[1]-1], posX, posY)
 
         elif card[0] == 'S':
             if card[1] == 14:
-                screen.blit(self.cardSpades[0],(posX,posY))
+                screen.blit(self.cardSpades[0], posX, posY)
             else :
-                screen.blit(self.cardSpades[card[1]-1],(posX,posY))
+                screen.blit(self.cardSpades[card[1]-1], posX, posY)
 
-        else : print "Wrong suit! Check your card. :- ",card
+        else : print("Wrong suit! Check your card. :- ",card)
 
     def draw_init_cards(self, screen, myCards, infoFlag):
         INITCARDS = [(50,410), (95,410)]

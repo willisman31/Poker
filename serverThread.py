@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from socket import *
-from thread import *
+from threading import *
 import time, main
 
 class ServerThread(object):
@@ -22,8 +22,8 @@ class ServerThread(object):
         #Binding socket to a address. bind() takes tuple of host and port.
         try : sock.bind((self.host, self.port))
         except Exception as msg:
-            print "Could not start server.\n",msg
-            print "Restarting the game."
+            print("Could not start server.\n",msg)
+            print("Restarting the game.")
             main.Begin()
             sys.exit()
 
@@ -77,10 +77,10 @@ class ServerThread(object):
             if not data:
                 self.num_of_clients -= 1
                 break
-            print str(addr) + ' : ' +data
+            print(str(addr) + ' : ' +data)
         conn.close()
 
 if __name__ == '__main__':
     obj = ServerThread()
-    print obj.get_ip()
+    print(obj.get_ip())
     time.sleep(60)

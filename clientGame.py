@@ -8,7 +8,7 @@ from graphics import *
 class ClientGame:
     def __init__(self, clientSocket, screen):
 
-        print "Inside ClientGame : init method"
+        print("Inside ClientGame : init method")
 
         # self.test(screen)
         self.main(clientSocket, screen)
@@ -19,7 +19,7 @@ class ClientGame:
 
         jsonData = clientSocket.recv(4196)
         if not jsonData:
-            print "No data received from server.\nRestarting Game."
+            print("No data received from server.\nRestarting Game.")
             main.Begin()
             sys.exit()
 
@@ -108,7 +108,7 @@ class ClientGame:
                         if isSend == True:
                             data = clientSocket.send(str(state))
                             if not data:
-                                print "Server not receiving data.\nRestarting Game."
+                                print("Server not receiving data.\nRestarting Game.")
                                 main.Begin()
                                 sys.exit()
 
@@ -127,7 +127,7 @@ class ClientGame:
 
     def update_screen(self, screen, g):
 
-        print "Turn ", self.turn, "ExTurn ", self.exTurn
+        print("Turn ", self.turn, "ExTurn ", self.exTurn)
         g.draw_boy(screen, self.turn, self.myTurn, self.turn)    #Redrawing the current player's image
         g.draw_boy_box(screen, self.turn, self.MONEY[self.turn], self.NAMES[self.turn])    #Redrawing current player's text box
 

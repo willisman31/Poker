@@ -173,7 +173,7 @@ class ServerGame:
         self.start_round()
 
         self.infoFlag = 10        # Result 10
-        print "Hand completed"
+        print("Hand completed")
         self.fin_hand()
 
 
@@ -256,7 +256,7 @@ class ServerGame:
             i+=1
 
             cSock.send(completeMessage)
-            print "Size of message sent : "+ str(sys.getsizeof(completeMessage)) +" bytes!"
+            print("Size of message sent : "+ str(sys.getsizeof(completeMessage)) +" bytes!")
 
     def hand_result(self):
         obj = Result()
@@ -300,9 +300,9 @@ class ServerGame:
         handPot = sorted(handPot, key=itemgetter(3), reverse=True)
         length = len(handPot)
 
-        print handPot
-        print length
-        print extraMoney
+        print(handPot)
+        print(length)
+        print(extraMoney)
 
 
         self.handWinners = []
@@ -313,7 +313,7 @@ class ServerGame:
         extraMoneyLength = len(extraMoney)
 
         while self.pot != 0 and len(handPot) > 0:
-            print "in loop 1"
+            print("in loop 1")
             length = len(handPot)
             if length == 1:
                 self.players[handPot[0][0]].money += self.pot       #Last player may get some extra money
@@ -325,7 +325,7 @@ class ServerGame:
                     countEqual += 1
                 else:
                     break
-            print countEqual
+            print(countEqual)
             while True:
                 largestPot = handPot[0][3]
                 lessPot = 0
@@ -432,7 +432,7 @@ class ServerGame:
 
     def update_screen(self, screen, g):
 
-        print "Turn ", self.turn, "ExTurn ", self.exTurn
+        print("Turn ", self.turn, "ExTurn ", self.exTurn)
 
         g.draw_boy(screen, self.turn, self.myTurn, self.turn)    #Redrawing the current player's image
         g.draw_boy_box(screen, self.turn, self.MONEY[self.turn], self.NAMES[self.turn])    #Redrawing current player's text box
@@ -473,7 +473,7 @@ def main(screen, clientSockets):
     #clients = [1,2,3]
 
     unpause_clients(clientSockets)
-    print "Inside serverGame file : Method main()"
+    print("Inside serverGame file : Method main()")
 
     game = ServerGame(clientSockets,screen)
     game.start_game()

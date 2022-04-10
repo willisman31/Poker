@@ -47,7 +47,7 @@ class Begin:
         self.BUT_SERVER = mygui.Button()
         self.BUT_CLIENT = mygui.Button()
 
-        self.TXT_WELCOME, self.TXT_WELCOME_RECT = mygui.print_text('freesansbold.ttf', HEIGHT/15, "Welcome", WHITE, None, WIDTH/2, HEIGHT/10)
+        self.TXT_WELCOME, self.TXT_WELCOME_RECT = mygui.print_text('freesansbold.ttf', int(HEIGHT/15), "Welcome", WHITE, None, int(WIDTH/2), int(HEIGHT/10))
 
 
 if __name__ == '__main__':

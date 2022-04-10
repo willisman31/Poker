@@ -26,7 +26,7 @@ class Player():
         self.fold = True
 
     def display(self):
-        print self.turn,self.name,self.money,self.pot,self.fold
+        print(self.turn,self.name,self.money,self.pot,self.fold)
 
 if __name__ == '__main__':
     obj = Player(0)

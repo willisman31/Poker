@@ -1,5 +1,5 @@
 from socket import *
-from thread import *
+from threading import *
 import time, ClientSide
 
 class ClientThread(object):
@@ -12,7 +12,7 @@ class ClientThread(object):
             #Connecting to socket
             self.sock.connect((host, port)) #Connect takes tuple of host and port
         except Exception as msg:
-            print "Could not connect to server.\nError msg : ", msg
+            print("Could not connect to server.\nError msg : ", msg)
             ClientSide.PokerClient(screen)
 
         #start_new_thread(self.client_thread,(self.sock,))

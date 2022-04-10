@@ -22,7 +22,7 @@ class Deck():
 
     def display(self):
         for i in self.deck:
-            print i
+            print(i)
 
 if __name__ == '__main__':
     obj = Deck()
