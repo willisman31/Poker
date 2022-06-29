@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import pygame, time
 from constants import *
 from pygame.locals import *

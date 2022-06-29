@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from socket import *
 from threading import *
 import time, ClientSide

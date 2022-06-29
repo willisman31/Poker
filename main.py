@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys, pygame, mygui, ServerSide, ClientSide
 from pygame.locals import *
 from constants import *
