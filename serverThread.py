@@ -28,17 +28,8 @@ class ServerThread(object):
             main.Begin()
             sys.exit()
 
-        #print self.get_ip()
-        #print self.get_port()
-        #print self.get_num_of_clients()
-        #print([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
-
-        #self.clients.append(sock)
-
         #Listening at the address
         sock.listen(5) #5 denotes the number of clients can queue
-
-        #t1 = Thread(target=self.serverthread, args=(scriptA + argumentsA))
 
         start_new_thread(self.server_thread,(sock,))
 
@@ -55,6 +46,7 @@ class ServerThread(object):
             #start_new_thread(self.client_thread,(conn,addr)) #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
 
         sock.close()
+
     def get_ip(self):
         s = socket(AF_INET, SOCK_DGRAM)
         s.connect(('8.8.8.8', 0))
@@ -66,11 +58,9 @@ class ServerThread(object):
     def get_num_of_clients(self):
         return self.num_of_clients
 
-
     def client_thread(self,conn,addr):
-    #infinite loop so that function do not terminate and thread do not end.
+        #infinite loop so that function do not terminate and thread do not end.
         while True:
-
             #Sending message to connected client
             #conn.send('Hi! I am server\n') #send only takes string
             #Receiving from client
@@ -85,3 +75,4 @@ if __name__ == '__main__':
     obj = ServerThread()
     print(obj.get_ip())
     time.sleep(60)
+
