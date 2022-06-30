@@ -30,7 +30,7 @@ class ClientThread(object):
         sock.close()
 
 def main():
-    host = '172.24.136.242' # '127.0.0.1' can also be used
+    host = socket.gethostname()
     port = 1234
 
     obj = ClientThread(host,port)

@@ -13,7 +13,7 @@ class ServerThread(object):
 
         # Defining server address and port
 
-        self.host = '127.0.0.1'  #'localhost' or '127.0.0.1' or '' are all same
+        self.host = socket.gethostname()
         self.host = self.get_ip()
         self.port = 1234 #Use port > 1024, below it all are reserved
 
